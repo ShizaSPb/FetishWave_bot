@@ -1,0 +1,26 @@
+# Секретные файлы
+.env
+*.env
+.env.local
+
+# Виртуальное окружение
+.venv/
+venv/
+env/
+
+# Файлы IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Кеш Python
+__pycache__/
+*.py[cod]
+
+# Логи
+*.log
+logs/
+
+# Notion бэкапы (если есть)
+*.backup
