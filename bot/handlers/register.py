@@ -66,6 +66,7 @@ async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await handle_registration_failure(update, context)
         return ConversationHandler.END
 
+
 async def get_email(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         required_keys = ['name', 'notion_page_id']
@@ -93,7 +94,22 @@ async def get_email(update: Update, context: ContextTypes.DEFAULT_TYPE):
             raise Exception("Notion update failed")
 
         await cleanup_messages(context, update.effective_chat.id)
-        await update.message.reply_text("✅ Регистрация успешно завершена!")
+
+        # Создаем кнопку "В меню"
+        from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+        keyboard = [
+            [InlineKeyboardButton(
+                LANGUAGES[context.user_data['lang']]["menu_button"],
+                callback_data="main_menu"
+            )]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
+        # Отправляем сообщение с кнопкой
+        await update.message.reply_text(
+            "✅ Регистрация успешно завершена!",
+            reply_markup=reply_markup
+        )
 
     except ValueError as e:
         logger.warning(f"Validation error: {e}", exc_info=True)
