@@ -108,19 +108,9 @@ async def get_email(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         await cleanup_messages(context, update.effective_chat.id)
 
-        # Создаем кнопку "В меню"
-        keyboard = [
-            [InlineKeyboardButton(
-                LANGUAGES[context.user_data['lang']]["menu_button"],
-                callback_data="main_menu"
-            )]
-        ]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-
-        await update.message.reply_text(
-            "✅ Регистрация успешно завершена!",
-            reply_markup=reply_markup
-        )
+        # Сразу переходим в главное меню
+        from bot.handlers.menu import show_main_menu
+        await show_main_menu(update, context)
 
     except ValueError as e:
         logger.warning(f"Validation error: {e}", exc_info=True)
