@@ -10,15 +10,19 @@ notion = Client(auth=NOTION_TOKEN)
 async def add_user_to_notion(user_data: dict) -> str:
     """Создание записи с возвратом page_id"""
     try:
-        if not all(k in user_data for k in ['telegram_id', 'username', 'language']):
+        required_fields = ['telegram_id', 'username', 'language', 'name', 'email', 'status']
+        if not all(k in user_data for k in required_fields):
             raise ValueError("Missing required fields")
 
         response = notion.pages.create(
             parent={"database_id": NOTION_DATABASE_ID},
             properties={
+                "Name": {"title": [{"text": {"content": user_data["name"]}}]},
                 "Telegram ID": {"number": user_data["telegram_id"]},
                 "Username": {"rich_text": [{"text": {"content": user_data["username"]}}]},
                 "Language": {"select": {"name": user_data["language"]}},
+                "Email": {"email": user_data["email"]},
+                "Status": {"select": {"name": user_data["status"]}},
                 "Registration Date": {"date": {"start": user_data["reg_date"]}}
             }
         )
@@ -71,11 +75,11 @@ async def get_user_data(telegram_id: int):
         return {
             "name": _get_title(properties["Name"]),
             "email": properties["Email"]["email"],
+            "status": properties["Status"]["select"]["name"],
             "reg_date": properties["Registration Date"]["date"]["start"],
             "username": _get_rich_text(properties["Username"]),
             "language": properties["Language"]["select"]["name"]
         }
-
     except Exception as e:
         logger.error(f"Notion query error: {e}")
         return None

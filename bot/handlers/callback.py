@@ -1,6 +1,6 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes, CallbackQueryHandler
-from bot.utils.languages import LANGUAGES
+from bot.handlers.menu import show_main_menu
 
 
 async def language_selection(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -10,29 +10,17 @@ async def language_selection(update: Update, context: ContextTypes.DEFAULT_TYPE)
     lang = query.data.split("_")[-1]
     context.user_data["lang"] = lang
 
-    # Подменяем сообщение с кнопками выбора языка
-    await query.edit_message_text(
-        text=LANGUAGES[lang]["welcome"],
-        reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton(LANGUAGES[lang]["register"], callback_data="start_register")]
-        ])
-    )
+    # Для теста сразу показываем главное меню
+    await show_main_menu(update, context)
 
 
 async def main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-
-    lang = context.user_data.get('lang', 'ru')
-    await query.edit_message_text(
-        text=LANGUAGES[lang]["welcome"],
-        reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton(LANGUAGES[lang]["register"], callback_data="start_register")]
-        ])
-    )
+    await show_main_menu(update, context)
 
 
-# Добавьте в список обработчиков
+# Обработчики
 handlers = [
     CallbackQueryHandler(language_selection, pattern="^set_lang_"),
     CallbackQueryHandler(main_menu, pattern="^main_menu$")
