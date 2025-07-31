@@ -1,14 +1,14 @@
 from telegram.ext import Application
 from config import BOT_TOKEN
-from handlers import start, register  # Импортируем обработчики
+from bot.handlers import handlers
 
-# Инициализация бота
-app = Application.builder().token(BOT_TOKEN).build()
+def run_bot():
+    app = Application.builder().token(BOT_TOKEN).build()
 
-# Регистрируем обработчики команд
-app.add_handler(start.handler)  # /start
-app.add_handler(register.handler)  # /register
+    for handler in handlers:
+        app.add_handler(handler)
 
-# Запускаем бота
-print("Бот запущен!")
-app.run_polling()
+    app.run_polling()
+
+if __name__ == "__main__":
+    run_bot()

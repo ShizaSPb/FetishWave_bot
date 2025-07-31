@@ -1,12 +1,8 @@
 from telegram import Update
-from telegram.ext import CommandHandler
+from telegram.ext import ContextTypes, CommandHandler
+from bot.handlers.shared import send_language_keyboard
 
-async def start_command(update: Update, context):
-    user = update.effective_user
-    await update.message.reply_text(
-        f"Привет, {user.first_name}! Я бот для продаж.\n"
-        "Используй /register чтобы зарегистрироваться."
-    )
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await send_language_keyboard(update)
 
-# Создаем обработчик команды
-handler = CommandHandler("start", start_command)
+handler = CommandHandler('start', start)

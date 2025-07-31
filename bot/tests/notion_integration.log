@@ -1,3 +1,0 @@
-2025-07-31 00:44:31,178 - __main__ - INFO - Notion клиент успешно инициализирован
-2025-07-31 00:44:31,552 - httpx - INFO - HTTP Request: GET https://api.notion.com/v1/users/me "HTTP/1.1 401 Unauthorized"
-2025-07-31 00:44:31,553 - __main__ - ERROR - Ошибка подключения к Notion API: API token is invalid.
