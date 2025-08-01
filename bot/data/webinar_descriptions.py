@@ -139,7 +139,7 @@ WEBINAR_DESCRIPTIONS = {
         ),
 
         "webinar_sissy": (
-            "<b>✨ Sissy, cuckold, chastity cage 🆕</b>\n\n"
+            "<b>🆕 Sissy, cuckold, chastity cage 🆕</b>\n\n"
             
             "• Кому актуально:\n"
             "• Вебкам-моделям и контент-криэйторам любых категорий\n"

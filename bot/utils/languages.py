@@ -61,7 +61,41 @@ LANGUAGES = {
         "webinar_joi": "✨ JOI, CEI, SPH: виды, идеи, техники ✨",
         "webinar_psychology": "✨ Психология нижнего, понять и привязать ✨",
         "webinar_hypno": "✨ Эротический гипноз ✨",
-        "webinar_sissy": "✨ Sissy, cuckold, chastity cage 🆕"
+        "webinar_sissy": "🆕 Sissy, cuckold, chastity cage 🆕",
+
+        # Новые тексты для системы оплаты
+        "choose_payment": "💰 <b>Выберите способ оплаты:</b>",
+        "payment_rub": "₽ Рубли",
+        "payment_crypto": "₿ Crypto (USDT TRC20)",
+        "payment_eur": "€ Euro",
+
+        "payment_rub_details": (
+            "💳 <b>Оплата в рублях</b>\n\n"
+            "Реквизиты для оплаты:\n"
+            "Банк: Тинькофф\n"
+            "Номер карты: <code>5536 9138 1234 5678</code>\n"
+            "Получатель: Иванов И.И.\n\n"
+            "После оплаты отправьте чек @username"
+        ),
+
+        "payment_crypto_details": (
+            "₿ <b>Оплата криптовалютой</b>\n\n"
+            "Кошелек: <code>TJm...W1f</code>\n"
+            "Сеть: TRON (TRC20)\n"
+            "Токен: USDT\n\n"
+            "После оплаты отправьте хеш транзакции @username"
+        ),
+
+        "payment_eur_details": (
+            "€ <b>Оплата в евро</b>\n\n"
+            "Реквизиты для оплаты:\n"
+            "IBAN: DE89 3704 0044 0532 0130 00\n"
+            "BIC: COBADEFFXXX\n"
+            "Получатель: Ivanov I.I.\n\n"
+            "После оплаты отправьте подтверждение @username"
+        ),
+
+        "payment_error": "⚠️ Ошибка обработки платежа"
     },
     "en": {
         # Basic texts
@@ -125,6 +159,40 @@ LANGUAGES = {
         "webinar_joi": "✨ JOI, CEI, SPH: types, ideas, techniques ✨",
         "webinar_psychology": "✨ Psychology of the bottom, understand and bind ✨",
         "webinar_hypno": "✨ Erotic hypnosis ✨",
-        "webinar_sissy": "✨ Sissy, cuckold, chastity cage 🆕",
+        "webinar_sissy": "🆕 Sissy, cuckold, chastity cage 🆕",
+
+        # New payment system texts
+        "choose_payment": "💰 <b>Select payment method:</b>",
+        "payment_rub": "₽ Rubles",
+        "payment_crypto": "₿ Crypto (USDT TRC20)",
+        "payment_eur": "€ Euro",
+
+        "payment_rub_details": (
+            "💳 <b>Payment in rubles</b>\n\n"
+            "Payment details:\n"
+            "Bank: Tinkoff\n"
+            "Card number: <code>5536 9138 1234 5678</code>\n"
+            "Recipient: Ivanov I.I.\n\n"
+            "Send receipt to @username"
+        ),
+
+        "payment_crypto_details": (
+            "₿ <b>Crypto payment</b>\n\n"
+            "Wallet: <code>TJm...W1f</code>\n"
+            "Network: TRON (TRC20)\n"
+            "Token: USDT\n\n"
+            "Send transaction hash to @username"
+        ),
+
+        "payment_eur_details": (
+            "€ <b>Payment in euros</b>\n\n"
+            "Payment details:\n"
+            "IBAN: DE89 3704 0044 0532 0130 00\n"
+            "BIC: COBADEFFXXX\n"
+            "Recipient: Ivanov I.I.\n\n"
+            "Send confirmation to @username"
+        ),
+
+        "payment_error": "⚠️ Payment processing error"
     }
 }

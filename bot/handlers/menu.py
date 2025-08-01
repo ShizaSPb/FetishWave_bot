@@ -124,8 +124,8 @@ async def show_webinar_details(update: Update, context: ContextTypes.DEFAULT_TYP
 
     # Формируем клавиатуру с кнопками
     keyboard = [
-        [InlineKeyboardButton(LANGUAGES[lang]['buy'], callback_data=f"buy_{webinar_id}")],
-        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="menu_webinars")]
+        [InlineKeyboardButton(LANGUAGES[lang]['buy'], callback_data=f"payment_methods_{webinar_id}")],
+        [InlineKeyboardButton(LANGUAGES[lang]['back'], callback_data="menu_webinars")]
     ]
 
     # Отправляем сообщение с описанием
@@ -141,7 +141,6 @@ async def show_webinar_details(update: Update, context: ContextTypes.DEFAULT_TYP
             text="⚠️ Произошла ошибка при загрузке описания",
             reply_markup=InlineKeyboardMarkup(keyboard)
         )
-
 
 async def show_consultations_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -222,6 +221,92 @@ async def process_purchase(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ])
     )
 
+async def show_payment_methods(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    lang = context.user_data.get('lang', 'ru')
+    webinar_id = query.data.replace("payment_methods_", "")
+
+    keyboard = [
+        [InlineKeyboardButton("₽ Рубли", callback_data=f"pay_rub_{webinar_id}")],
+        [InlineKeyboardButton("₿ Crypto (USDT TRC20)", callback_data=f"pay_crypto_{webinar_id}")],
+        [InlineKeyboardButton("€ Euro", callback_data=f"pay_eur_{webinar_id}")],
+        [InlineKeyboardButton(LANGUAGES[lang]['back'], callback_data=webinar_id)]
+    ]
+
+    await query.edit_message_text(
+        text="Выберите способ оплаты:",
+        reply_markup=InlineKeyboardMarkup(keyboard)
+    )
+
+
+async def show_rub_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    webinar_id = query.data.replace("pay_rub_", "")
+
+    payment_info = (
+        "💳 <b>Оплата в рублях</b>\n\n"
+        "Реквизиты для оплаты:\n"
+        "Банк: Тинькофф\n"
+        "Номер карты: <code>5536 9138 1234 5678</code>\n"
+        "Получатель: Иванов И.И.\n\n"
+        "После оплаты отправьте чек @username"
+    )
+
+    await query.edit_message_text(
+        text=payment_info,
+        reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton("🔙 Назад", callback_data=f"payment_methods_{webinar_id}")]
+        ]),
+        parse_mode='HTML'
+    )
+
+
+async def show_crypto_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    webinar_id = query.data.replace("pay_crypto_", "")
+
+    payment_info = (
+        "₿ <b>Оплата криптовалютой (USDT TRC20)</b>\n\n"
+        "Кошелек: <code>TJm...W1f</code>\n"
+        "Сеть: TRON (TRC20)\n"
+        "Токен: USDT\n\n"
+        "После оплаты отправьте хеш транзакции @username"
+    )
+
+    await query.edit_message_text(
+        text=payment_info,
+        reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton("🔙 Назад", callback_data=f"payment_methods_{webinar_id}")]
+        ]),
+        parse_mode='HTML'
+    )
+
+
+async def show_eur_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    webinar_id = query.data.replace("pay_eur_", "")
+
+    payment_info = (
+        "€ <b>Оплата в евро</b>\n\n"
+        "Реквизиты для оплаты:\n"
+        "IBAN: DE89 3704 0044 0532 0130 00\n"
+        "BIC: COBADEFFXXX\n"
+        "Получатель: Ivanov I.I.\n\n"
+        "После оплаты отправьте подтверждение @username"
+    )
+
+    await query.edit_message_text(
+        text=payment_info,
+        reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton("🔙 Назад", callback_data=f"payment_methods_{webinar_id}")]
+        ]),
+        parse_mode='HTML'
+    )
+
 
 # Регистрация обработчиков
 handlers = [
@@ -233,5 +318,9 @@ handlers = [
     CallbackQueryHandler(show_consultations_menu, pattern="^menu_consultations$"),
     CallbackQueryHandler(show_mentoring_menu, pattern="^menu_mentoring$"),
     CallbackQueryHandler(show_page_audit_menu, pattern="^menu_page_audit$"),
-    CallbackQueryHandler(show_private_channel_menu, pattern="^menu_private_channel$")
+    CallbackQueryHandler(show_private_channel_menu, pattern="^menu_private_channel$"),
+    CallbackQueryHandler(show_payment_methods, pattern="^payment_methods_"),
+    CallbackQueryHandler(show_rub_payment, pattern="^pay_rub_"),
+    CallbackQueryHandler(show_crypto_payment, pattern="^pay_crypto_"),
+    CallbackQueryHandler(show_eur_payment, pattern="^pay_eur_"),
 ]
