@@ -1,7 +1,9 @@
+import logger
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes, CallbackQueryHandler
 from bot.utils.languages import LANGUAGES
 from bot.database.notion_db import get_user_data
+from bot.data.webinar_descriptions import WEBINAR_DESCRIPTIONS
 
 
 async def show_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -85,34 +87,60 @@ async def show_webinars_menu(update: Update, context: ContextTypes.DEFAULT_TYPE)
     lang = context.user_data.get('lang', 'ru')
 
     keyboard = [
-        [InlineKeyboardButton(
-            LANGUAGES[lang]["webinar_femdom"],
-            url="https://t.me/olga_fetishwave/844"
-        )],
-        [InlineKeyboardButton(
-            LANGUAGES[lang]["webinar_joi"],
-            url="https://t.me/olga_fetishwave/263"
-        )],
-        [InlineKeyboardButton(
-            LANGUAGES[lang]["webinar_psychology"],
-            url="https://t.me/olga_fetishwave/639"
-        )],
-        [InlineKeyboardButton(
-            LANGUAGES[lang]["webinar_hypno"],
-            url="https://t.me/olga_fetishwave/900"
-        )],
-        [InlineKeyboardButton(
-            LANGUAGES[lang]["webinar_sissy"],
-            url="https://t.me/olga_fetishwave/1023"
-        )],
+        [InlineKeyboardButton(LANGUAGES[lang]["webinar_femdom"], callback_data="webinar_femdom")],
+        [InlineKeyboardButton(LANGUAGES[lang]["webinar_joi"], callback_data="webinar_joi")],
+        [InlineKeyboardButton(LANGUAGES[lang]["webinar_psychology"], callback_data="webinar_psychology")],
+        [InlineKeyboardButton(LANGUAGES[lang]["webinar_hypno"], callback_data="webinar_hypno")],
+        [InlineKeyboardButton(LANGUAGES[lang]["webinar_sissy"], callback_data="webinar_sissy")],
         [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="menu_products")]
     ]
 
     await query.edit_message_text(
-        text=LANGUAGES[lang]["webinars_title"],
+        text="🎓 <b>Доступные вебинары:</b>\n\nВыберите интересующий вас вебинар:",
         reply_markup=InlineKeyboardMarkup(keyboard),
         parse_mode='HTML'
     )
+
+
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ContextTypes
+from bot.utils.languages import LANGUAGES
+from bot.data.webinar_descriptions import WEBINAR_DESCRIPTIONS
+
+
+async def show_webinar_details(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+
+    # Получаем язык и ID вебинара
+    lang = context.user_data.get('lang', 'ru')
+    webinar_id = query.data  # Например: "webinar_femdom"
+
+    # Получаем описание из внешнего файла
+    description = WEBINAR_DESCRIPTIONS.get(lang, {}).get(
+        webinar_id,
+        LANGUAGES[lang].get("default_description", "Описание вебинара недоступно")
+    )
+
+    # Формируем клавиатуру с кнопками
+    keyboard = [
+        [InlineKeyboardButton(LANGUAGES[lang]['buy'], callback_data=f"buy_{webinar_id}")],
+        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="menu_webinars")]
+    ]
+
+    # Отправляем сообщение с описанием
+    try:
+        await query.edit_message_text(
+            text=description,
+            reply_markup=InlineKeyboardMarkup(keyboard),
+            parse_mode='HTML'
+        )
+    except Exception as e:
+        logger.error(f"Error showing webinar details: {e}")
+        await query.edit_message_text(
+            text="⚠️ Произошла ошибка при загрузке описания",
+            reply_markup=InlineKeyboardMarkup(keyboard)
+        )
 
 
 async def show_consultations_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -181,8 +209,24 @@ async def show_private_channel_menu(update: Update, context: ContextTypes.DEFAUL
     )
 
 
+async def process_purchase(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    webinar_id = query.data.replace("buy_", "")
+
+    # Здесь реализуйте логику покупки
+    await query.edit_message_text(
+        text=f"🛒 Оформление покупки вебинара: {webinar_id}",
+        reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton("🔙 Назад", callback_data=webinar_id)]
+        ])
+    )
+
+
 # Регистрация обработчиков
 handlers = [
+    CallbackQueryHandler(show_webinar_details, pattern="^webinar_"),
+    CallbackQueryHandler(process_purchase, pattern="^buy_webinar_"),
     CallbackQueryHandler(show_main_menu, pattern="^main_menu$"),
     CallbackQueryHandler(show_products_menu, pattern="^menu_products$"),
     CallbackQueryHandler(show_webinars_menu, pattern="^menu_webinars$"),
