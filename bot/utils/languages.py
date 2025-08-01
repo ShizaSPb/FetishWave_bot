@@ -52,7 +52,15 @@ LANGUAGES = {
         "cancel": "❌ Отменить",
         "select": "🔼 Выбрать",
         "buy": "💳 Купить",
-        "details": "🔍 Подробнее"
+        "details": "🔍 Подробнее",
+
+        # Меню "Вебинары"
+        "webinars_title": "🎓 <b>Доступные вебинары:</b>\n\nВыберите интересующий вас вебинар:",
+        "webinar_femdom": "✨ Фемдом секстинг, вебинар в 2 частях: база и практика ✨",
+        "webinar_joi": "✨ JOI, CEI, SPH: виды, идеи, техники ✨",
+        "webinar_psychology": "✨ Психология нижнего, понять и привязать ✨",
+        "webinar_hypno": "✨ Эротический гипноз ✨",
+        "webinar_sissy": "✨ Sissy, cuckold, chastity cage 🆕"
     },
     "en": {
         # Basic texts
@@ -107,6 +115,14 @@ LANGUAGES = {
         "cancel": "❌ Cancel",
         "select": "🔼 Select",
         "buy": "💳 Buy",
-        "details": "🔍 Details"
+        "details": "🔍 Details",
+
+        # Webinars menu
+        "webinars_title": "🎓 <b>Available webinars:</b>\n\nChoose the webinar you're interested in:",
+        "webinar_femdom": "✨ Femdom sexting, 2-part webinar: basics and practice ✨",
+        "webinar_joi": "✨ JOI, CEI, SPH: types, ideas, techniques ✨",
+        "webinar_psychology": "✨ Psychology of the bottom, understand and bind ✨",
+        "webinar_hypno": "✨ Erotic hypnosis ✨",
+        "webinar_sissy": "✨ Sissy, cuckold, chastity cage 🆕"
     }
 }

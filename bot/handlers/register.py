@@ -92,11 +92,10 @@ async def get_email(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
             raise ValueError("Invalid email format")
 
-        # Обновляем статус перед сохранением
         context.user_data['status'] = "Зарегистрирован"
+        context.user_data['registered'] = True  # Явно устанавливаем флаг регистрации
 
-        # Создаем запись в Notion со всеми данными
-        page_id = await add_user_to_notion({
+        await add_user_to_notion({
             "telegram_id": context.user_data['telegram_id'],
             "username": context.user_data['username'],
             "language": context.user_data['language'],
@@ -106,11 +105,12 @@ async def get_email(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "reg_date": datetime.now().isoformat()
         })
 
-        await cleanup_messages(context, update.effective_chat.id)
+        if 'messages_to_delete' in context.user_data:
+            del context.user_data['messages_to_delete']
 
-        # Сразу переходим в главное меню
         from bot.handlers.menu import show_main_menu
         await show_main_menu(update, context)
+        return ConversationHandler.END
 
     except ValueError as e:
         logger.warning(f"Validation error: {e}", exc_info=True)
@@ -120,10 +120,8 @@ async def get_email(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         logger.error(f"Registration failed: {str(e)}", exc_info=True)
         await handle_registration_failure(update, context)
-    finally:
-        context.user_data.clear()
+        return ConversationHandler.END
 
-    return ConversationHandler.END
 
 
 async def handle_registration_failure(update: Update, context: ContextTypes.DEFAULT_TYPE):

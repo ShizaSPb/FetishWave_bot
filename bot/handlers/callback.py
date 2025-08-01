@@ -12,14 +12,12 @@ async def language_selection(update: Update, context: ContextTypes.DEFAULT_TYPE)
     lang = query.data.split("_")[-1]
     context.user_data["lang"] = lang
 
-    # Проверяем регистрацию пользователя
+    # Проверяем регистрацию
     user_data = await get_user_data(update.effective_user.id)
-
     if user_data and user_data.get("status") == "Зарегистрирован":
-        # Если зарегистрирован - сразу в главное меню
+        context.user_data['registered'] = True
         await show_main_menu(update, context)
     else:
-        # Если не зарегистрирован - показываем кнопку регистрации
         await query.edit_message_text(
             text=LANGUAGES[lang]["welcome"],
             reply_markup=InlineKeyboardMarkup([
@@ -31,17 +29,9 @@ async def language_selection(update: Update, context: ContextTypes.DEFAULT_TYPE)
 async def main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-
-    lang = context.user_data.get('lang', 'ru')
-    await query.edit_message_text(
-        text=LANGUAGES[lang]["welcome"],
-        reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton(LANGUAGES[lang]["register"], callback_data="start_register")]
-        ])
-    )
+    await show_main_menu(update, context)
 
 
-# Добавьте в список обработчиков
 handlers = [
     CallbackQueryHandler(language_selection, pattern="^set_lang_"),
     CallbackQueryHandler(main_menu, pattern="^main_menu$")

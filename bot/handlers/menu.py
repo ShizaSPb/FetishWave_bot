@@ -10,10 +10,11 @@ async def show_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.answer()
 
     lang = context.user_data.get('lang', 'ru')
-    user_data = await get_user_data(update.effective_user.id)
+    is_registered = context.user_data.get('registered') or await check_registration(update.effective_user.id)
 
-    # Если пользователь зарегистрирован
-    if user_data and user_data.get("status") == "Зарегистрирован":
+    if is_registered:
+        context.user_data['registered'] = True
+
         keyboard = [
             [InlineKeyboardButton(LANGUAGES[lang]["products"], callback_data="menu_products")],
             [InlineKeyboardButton(LANGUAGES[lang]["buy_ads"], callback_data="menu_buy_ads")],
@@ -36,7 +37,6 @@ async def show_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 reply_markup=reply_markup
             )
     else:
-        # Если не зарегистрирован
         registration_markup = InlineKeyboardMarkup([
             [InlineKeyboardButton(LANGUAGES[lang]["register"], callback_data="start_register")]
         ])
@@ -51,6 +51,12 @@ async def show_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 text=LANGUAGES[lang]["registration_required"],
                 reply_markup=registration_markup
             )
+
+
+async def check_registration(user_id: int) -> bool:
+    """Проверяет регистрацию в Notion"""
+    user_data = await get_user_data(user_id)
+    return user_data and user_data.get("status") == "Зарегистрирован"
 
 
 async def show_products_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -79,14 +85,33 @@ async def show_webinars_menu(update: Update, context: ContextTypes.DEFAULT_TYPE)
     lang = context.user_data.get('lang', 'ru')
 
     keyboard = [
-        [InlineKeyboardButton(LANGUAGES[lang]["for_personal"], callback_data="webinars_personal")],
-        [InlineKeyboardButton(LANGUAGES[lang]["for_company"], callback_data="webinars_company")],
+        [InlineKeyboardButton(
+            LANGUAGES[lang]["webinar_femdom"],
+            url="https://t.me/olga_fetishwave/844"
+        )],
+        [InlineKeyboardButton(
+            LANGUAGES[lang]["webinar_joi"],
+            url="https://t.me/olga_fetishwave/263"
+        )],
+        [InlineKeyboardButton(
+            LANGUAGES[lang]["webinar_psychology"],
+            url="https://t.me/olga_fetishwave/639"
+        )],
+        [InlineKeyboardButton(
+            LANGUAGES[lang]["webinar_hypno"],
+            url="https://t.me/olga_fetishwave/900"
+        )],
+        [InlineKeyboardButton(
+            LANGUAGES[lang]["webinar_sissy"],
+            url="https://t.me/olga_fetishwave/1023"
+        )],
         [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="menu_products")]
     ]
 
     await query.edit_message_text(
-        text=LANGUAGES[lang]["webinars_description"],
-        reply_markup=InlineKeyboardMarkup(keyboard)
+        text=LANGUAGES[lang]["webinars_title"],
+        reply_markup=InlineKeyboardMarkup(keyboard),
+        parse_mode='HTML'
     )
 
 
@@ -164,10 +189,5 @@ handlers = [
     CallbackQueryHandler(show_consultations_menu, pattern="^menu_consultations$"),
     CallbackQueryHandler(show_mentoring_menu, pattern="^menu_mentoring$"),
     CallbackQueryHandler(show_page_audit_menu, pattern="^menu_page_audit$"),
-    CallbackQueryHandler(show_private_channel_menu, pattern="^menu_private_channel$"),
-    CallbackQueryHandler(show_main_menu, pattern="^menu_buy_ads$"),
-    CallbackQueryHandler(show_main_menu, pattern="^menu_ask_question$"),
-    CallbackQueryHandler(show_main_menu, pattern="^menu_book_session$"),
-    CallbackQueryHandler(show_main_menu, pattern="^menu_leave_review$"),
-    CallbackQueryHandler(show_main_menu, pattern="^menu_personal_account$")
+    CallbackQueryHandler(show_private_channel_menu, pattern="^menu_private_channel$")
 ]
