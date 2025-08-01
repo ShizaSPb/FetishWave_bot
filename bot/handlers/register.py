@@ -92,9 +92,10 @@ async def get_email(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
             raise ValueError("Invalid email format")
 
+        # Обновляем статус перед сохранением
         context.user_data['status'] = "Зарегистрирован"
-        context.user_data['registered'] = True  # Явно устанавливаем флаг регистрации
 
+        # Создаем запись в Notion
         await add_user_to_notion({
             "telegram_id": context.user_data['telegram_id'],
             "username": context.user_data['username'],
@@ -105,11 +106,16 @@ async def get_email(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "reg_date": datetime.now().isoformat()
         })
 
-        if 'messages_to_delete' in context.user_data:
-            del context.user_data['messages_to_delete']
+        # Устанавливаем флаг регистрации
+        context.user_data['registered'] = True
 
+        # Очищаем сообщения перед переходом в меню
+        await cleanup_messages(context, update.effective_chat.id)
+
+        # Переходим в главное меню
         from bot.handlers.menu import show_main_menu
         await show_main_menu(update, context)
+
         return ConversationHandler.END
 
     except ValueError as e:
@@ -123,6 +129,21 @@ async def get_email(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return ConversationHandler.END
 
 
+async def cleanup_messages(context, chat_id):
+    """Удаляет все сообщения из списка messages_to_delete"""
+    if 'messages_to_delete' not in context.user_data:
+        return
+
+    for msg_id in context.user_data['messages_to_delete']:
+        try:
+            await context.bot.delete_message(chat_id=chat_id, message_id=msg_id)
+        except Exception as e:
+            logger.warning(f"Не удалось удалить сообщение {msg_id}: {e}")
+
+    # Очищаем список после удаления
+    del context.user_data['messages_to_delete']
+
+
 
 async def handle_registration_failure(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
@@ -133,14 +154,6 @@ async def handle_registration_failure(update: Update, context: ContextTypes.DEFA
             )
     except Exception as e:
         logger.error(f"Failure handling error: {e}", exc_info=True)
-
-
-async def cleanup_messages(context, chat_id):
-    for msg_id in context.user_data.get('messages_to_delete', []):
-        try:
-            await context.bot.delete_message(chat_id=chat_id, message_id=msg_id)
-        except Exception as e:
-            logger.warning(f"Не удалось удалить сообщение {msg_id}: {e}")
 
 
 register_conversation_handler = ConversationHandler(
