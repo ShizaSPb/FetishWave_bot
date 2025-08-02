@@ -61,13 +61,13 @@ def get_payment_methods_keyboard(lang, webinar_id):
         [InlineKeyboardButton(LANGUAGES[lang]["payment_rub"], callback_data=f"pay_rub_{webinar_id}")],
         [InlineKeyboardButton(LANGUAGES[lang]["payment_crypto"], callback_data=f"pay_crypto_{webinar_id}")],
         [InlineKeyboardButton(LANGUAGES[lang]["payment_eur"], callback_data=f"pay_eur_{webinar_id}")],
-        [InlineKeyboardButton(LANGUAGES[lang]['back'], callback_data=f"webinar_{webinar_id}")]
+        [InlineKeyboardButton(LANGUAGES[lang]['back'], callback_data=f"webinar_details_{webinar_id}")]  # Изменено на webinar_details_
     ])
 
 def get_back_to_payment_methods_keyboard(webinar_id, lang):
-    """Клавиатура с кнопкой возврата к вебинару"""
+    """Клавиатура с кнопкой возврата к выбору валюты"""
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data=f"webinar_details_{webinar_id}")]
+        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data=f"payment_methods_{webinar_id}")]
     ])
 
 def get_consultations_menu_keyboard(lang):

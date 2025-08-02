@@ -88,18 +88,17 @@ async def show_webinar_details(update: Update, context: ContextTypes.DEFAULT_TYP
     await query.answer()
     lang = context.user_data.get('lang', 'ru')
 
+    # Обрабатываем оба формата callback_data
     webinar_id = query.data.replace("webinar_details_", "").replace("webinar_", "")
     full_webinar_id = f"webinar_{webinar_id}"
 
-    # Получаем только ЧИСТОЕ описание без дублирования заголовка
     description = WEBINAR_DESCRIPTIONS.get(lang, {}).get(
         full_webinar_id,
         LANGUAGES[lang].get("default_description", "")
     )
 
-    # Формируем сообщение только с описанием (без повторного заголовка)
     await query.edit_message_text(
-        text=description,  # Только описание из webinar_descriptions
+        text=description,
         reply_markup=get_webinar_details_keyboard(lang, full_webinar_id),
         parse_mode='HTML'
     )
@@ -158,65 +157,51 @@ async def show_payment_methods(update: Update, context: ContextTypes.DEFAULT_TYP
         reply_markup=get_payment_methods_keyboard(lang, webinar_id)
     )
 
+
 async def show_rub_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-    lang = context.user_data.get('lang', 'ru')  # Добавлено получение языка
+    lang = context.user_data.get('lang', 'ru')
     webinar_id = query.data.replace("pay_rub_", "")
 
-    payment_info = (
-        "💳 <b>Оплата в рублях</b>\n\n"
-        "Реквизиты для оплаты:\n"
-        "Банк: Тинькофф\n"
-        "Номер карты: <code>5536 9138 1234 5678</code>\n"
-        "Получатель: Иванов И.И.\n\n"
-        "После оплаты отправьте чек @username"
-    )
+    # Сохраняем текущий вебинар в контексте
+    context.user_data['current_webinar'] = webinar_id
 
     await query.edit_message_text(
-        text=payment_info,
-        reply_markup=get_back_to_payment_methods_keyboard(webinar_id, lang),  # Теперь lang определён
+        text=LANGUAGES[lang]["payment_rub_details"],
+        reply_markup=get_back_to_payment_methods_keyboard(webinar_id, lang),
         parse_mode='HTML'
     )
+
 
 async def show_crypto_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-    lang = context.user_data.get('lang', 'ru')  # Добавлено получение языка
+    lang = context.user_data.get('lang', 'ru')
     webinar_id = query.data.replace("pay_crypto_", "")
 
-    payment_info = (
-        "₿ <b>Оплата криптовалютой (USDT TRC20)</b>\n\n"
-        "Кошелек: <code>TJm...W1f</code>\n"
-        "Сеть: TRON (TRC20)\n"
-        "Токен: USDT\n\n"
-        "После оплаты отправьте хеш транзакции @username"
-    )
+    # Сохраняем текущий вебинар в контексте
+    context.user_data['current_webinar'] = webinar_id
 
     await query.edit_message_text(
-        text=payment_info,
-        reply_markup=get_back_to_payment_methods_keyboard(webinar_id, lang),  # Теперь lang определён
+        text=LANGUAGES[lang]["payment_crypto_details"],
+        reply_markup=get_back_to_payment_methods_keyboard(webinar_id, lang),
         parse_mode='HTML'
     )
+
 
 async def show_eur_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-    lang = context.user_data.get('lang', 'ru')  # Добавлено получение языка
+    lang = context.user_data.get('lang', 'ru')
     webinar_id = query.data.replace("pay_eur_", "")
 
-    payment_info = (
-        "€ <b>Оплата в евро</b>\n\n"
-        "Реквизиты для оплаты:\n"
-        "IBAN: DE89 3704 0044 0532 0130 00\n"
-        "BIC: COBADEFFXXX\n"
-        "Получатель: Ivanov I.I.\n\n"
-        "После оплаты отправьте подтверждение @username"
-    )
+    # Сохраняем текущий вебинар в контексте
+    context.user_data['current_webinar'] = webinar_id
 
     await query.edit_message_text(
-        text=payment_info,
-        reply_markup=get_back_to_payment_methods_keyboard(webinar_id, lang),  # Теперь lang определён
+        text=LANGUAGES[lang]["payment_eur_details"],
+        reply_markup=get_back_to_payment_methods_keyboard(webinar_id, lang),
         parse_mode='HTML'
     )
 
