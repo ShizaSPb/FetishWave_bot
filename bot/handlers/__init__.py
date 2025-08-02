@@ -1,9 +1,7 @@
-# Упростим импорты, убрав возможные циклические зависимости
 from .start import handler as start_handler
-from .view_data import handler as view_data_handler
 from .callback import handlers as callback_handlers
+from .view_data import view_data_handler
 
-# Импорт ConversationHandler перенесём в конец
 def get_handlers():
     from .register import register_conversation_handler
     from .menu import handlers as menu_handlers

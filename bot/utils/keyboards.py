@@ -49,7 +49,7 @@ def get_webinars_menu_keyboard(lang):
     ])
 
 def get_webinar_details_keyboard(lang, webinar_id):
-    """Клавиатура деталей вебинара с кнопкой покупки"""
+    """Клавиатура деталей вебинара"""
     return InlineKeyboardMarkup([
         [InlineKeyboardButton(LANGUAGES[lang]['buy'], callback_data=f"payment_methods_{webinar_id}")],
         [InlineKeyboardButton(LANGUAGES[lang]['back'], callback_data="menu_webinars")]
@@ -64,10 +64,10 @@ def get_payment_methods_keyboard(lang, webinar_id):
         [InlineKeyboardButton(LANGUAGES[lang]['back'], callback_data=f"webinar_{webinar_id}")]
     ])
 
-def get_back_to_payment_methods_keyboard(webinar_id):
-    """Клавиатура с кнопкой возврата к выбору способа оплаты"""
+def get_back_to_payment_methods_keyboard(webinar_id, lang):
+    """Клавиатура с кнопкой возврата к вебинару"""
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("🔙 Назад", callback_data=f"payment_methods_{webinar_id}")]
+        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data=f"webinar_details_{webinar_id}")]
     ])
 
 def get_consultations_menu_keyboard(lang):

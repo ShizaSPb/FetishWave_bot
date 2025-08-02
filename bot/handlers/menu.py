@@ -1,4 +1,6 @@
 import logging
+
+from bot.utils.languages import LANGUAGES
 from telegram import Update
 from telegram.ext import ContextTypes, CallbackQueryHandler
 from bot.utils.languages import LANGUAGES
@@ -80,30 +82,27 @@ async def show_webinars_menu(update: Update, context: ContextTypes.DEFAULT_TYPE)
         parse_mode='HTML'
     )
 
+
 async def show_webinar_details(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-
     lang = context.user_data.get('lang', 'ru')
-    webinar_id = query.data
 
+    webinar_id = query.data.replace("webinar_details_", "").replace("webinar_", "")
+    full_webinar_id = f"webinar_{webinar_id}"
+
+    # Получаем только ЧИСТОЕ описание без дублирования заголовка
     description = WEBINAR_DESCRIPTIONS.get(lang, {}).get(
-        webinar_id,
-        LANGUAGES[lang].get("default_description", "Описание вебинара недоступно")
+        full_webinar_id,
+        LANGUAGES[lang].get("default_description", "")
     )
 
-    try:
-        await query.edit_message_text(
-            text=description,
-            reply_markup=get_webinar_details_keyboard(lang, webinar_id),
-            parse_mode='HTML'
-        )
-    except Exception as e:
-        logger.error(f"Error showing webinar details: {e}")
-        await query.edit_message_text(
-            text="⚠️ Произошла ошибка при загрузке описания",
-            reply_markup=get_webinar_details_keyboard(lang, webinar_id)
-        )
+    # Формируем сообщение только с описанием (без повторного заголовка)
+    await query.edit_message_text(
+        text=description,  # Только описание из webinar_descriptions
+        reply_markup=get_webinar_details_keyboard(lang, full_webinar_id),
+        parse_mode='HTML'
+    )
 
 async def show_consultations_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -151,14 +150,18 @@ async def show_payment_methods(update: Update, context: ContextTypes.DEFAULT_TYP
     lang = context.user_data.get('lang', 'ru')
     webinar_id = query.data.replace("payment_methods_", "")
 
+    # Сохраняем webinar_id в контексте для возможного использования
+    context.user_data['current_webinar'] = webinar_id
+
     await query.edit_message_text(
-        text="Выберите способ оплаты:",
+        text=LANGUAGES[lang]["choose_payment"],
         reply_markup=get_payment_methods_keyboard(lang, webinar_id)
     )
 
 async def show_rub_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
+    lang = context.user_data.get('lang', 'ru')  # Добавлено получение языка
     webinar_id = query.data.replace("pay_rub_", "")
 
     payment_info = (
@@ -172,13 +175,14 @@ async def show_rub_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await query.edit_message_text(
         text=payment_info,
-        reply_markup=get_back_to_payment_methods_keyboard(webinar_id),
+        reply_markup=get_back_to_payment_methods_keyboard(webinar_id, lang),  # Теперь lang определён
         parse_mode='HTML'
     )
 
 async def show_crypto_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
+    lang = context.user_data.get('lang', 'ru')  # Добавлено получение языка
     webinar_id = query.data.replace("pay_crypto_", "")
 
     payment_info = (
@@ -191,13 +195,14 @@ async def show_crypto_payment(update: Update, context: ContextTypes.DEFAULT_TYPE
 
     await query.edit_message_text(
         text=payment_info,
-        reply_markup=get_back_to_payment_methods_keyboard(webinar_id),
+        reply_markup=get_back_to_payment_methods_keyboard(webinar_id, lang),  # Теперь lang определён
         parse_mode='HTML'
     )
 
 async def show_eur_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
+    lang = context.user_data.get('lang', 'ru')  # Добавлено получение языка
     webinar_id = query.data.replace("pay_eur_", "")
 
     payment_info = (
@@ -211,11 +216,12 @@ async def show_eur_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await query.edit_message_text(
         text=payment_info,
-        reply_markup=get_back_to_payment_methods_keyboard(webinar_id),
+        reply_markup=get_back_to_payment_methods_keyboard(webinar_id, lang),  # Теперь lang определён
         parse_mode='HTML'
     )
 
 handlers = [
+    CallbackQueryHandler(show_webinar_details, pattern="^webinar_details_"),
     CallbackQueryHandler(show_webinar_details, pattern="^webinar_"),
     CallbackQueryHandler(show_main_menu, pattern="^main_menu$"),
     CallbackQueryHandler(show_products_menu, pattern="^menu_products$"),
