@@ -1,7 +1,7 @@
 import re
 from datetime import datetime
 import logging
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update
 from telegram.ext import (
     ConversationHandler,
     MessageHandler,
@@ -12,28 +12,22 @@ from telegram.ext import (
 from bot.database.notion_db import add_user_to_notion, get_user_data
 from bot.handlers.shared import get_user_language
 from bot.utils.languages import LANGUAGES
+from bot.utils.keyboards import get_already_registered_keyboard, get_main_menu_keyboard
 
 logger = logging.getLogger(__name__)
 NAME, EMAIL = range(2)
-
 
 async def start_register_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         query = update.callback_query
         await query.answer()
 
-        # Проверяем, не зарегистрирован ли уже пользователь
         existing_user = await get_user_data(update.effective_user.id)
         if existing_user:
             lang = context.user_data.get('lang', 'ru')
             await query.edit_message_text(
                 LANGUAGES[lang]["already_registered"],
-                reply_markup=InlineKeyboardMarkup([
-                    [InlineKeyboardButton(
-                        LANGUAGES[lang]["menu_button"],
-                        callback_data="main_menu"
-                    )]
-                ])
+                reply_markup=get_already_registered_keyboard(lang)
             )
             return ConversationHandler.END
 
@@ -45,7 +39,7 @@ async def start_register_callback(update: Update, context: ContextTypes.DEFAULT_
             'username': update.effective_user.username or "",
             'language': context.user_data['lang'],
             'messages_to_delete': [query.message.message_id],
-            'status': "Не зарегистрирован"  # Временный статус
+            'status': "Не зарегистрирован"
         })
 
         await query.edit_message_text(LANGUAGES[context.user_data['lang']]["enter_name"])
@@ -56,7 +50,6 @@ async def start_register_callback(update: Update, context: ContextTypes.DEFAULT_
         if update.callback_query and update.callback_query.message:
             await update.callback_query.message.reply_text("❌ Ошибка начала регистрации")
         return ConversationHandler.END
-
 
 async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
@@ -76,7 +69,6 @@ async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await handle_registration_failure(update, context)
         return ConversationHandler.END
 
-
 async def get_email(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         required_keys = ['name', 'telegram_id', 'username', 'language']
@@ -92,10 +84,8 @@ async def get_email(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
             raise ValueError("Invalid email format")
 
-        # Обновляем статус перед сохранением
         context.user_data['status'] = "Зарегистрирован"
 
-        # Создаем запись в Notion
         await add_user_to_notion({
             "telegram_id": context.user_data['telegram_id'],
             "username": context.user_data['username'],
@@ -106,13 +96,9 @@ async def get_email(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "reg_date": datetime.now().isoformat()
         })
 
-        # Устанавливаем флаг регистрации
         context.user_data['registered'] = True
-
-        # Очищаем сообщения перед переходом в меню
         await cleanup_messages(context, update.effective_chat.id)
 
-        # Переходим в главное меню
         from bot.handlers.menu import show_main_menu
         await show_main_menu(update, context)
 
@@ -128,7 +114,6 @@ async def get_email(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await handle_registration_failure(update, context)
         return ConversationHandler.END
 
-
 async def cleanup_messages(context, chat_id):
     """Удаляет все сообщения из списка messages_to_delete"""
     if 'messages_to_delete' not in context.user_data:
@@ -140,10 +125,7 @@ async def cleanup_messages(context, chat_id):
         except Exception as e:
             logger.warning(f"Не удалось удалить сообщение {msg_id}: {e}")
 
-    # Очищаем список после удаления
     del context.user_data['messages_to_delete']
-
-
 
 async def handle_registration_failure(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
@@ -154,7 +136,6 @@ async def handle_registration_failure(update: Update, context: ContextTypes.DEFA
             )
     except Exception as e:
         logger.error(f"Failure handling error: {e}", exc_info=True)
-
 
 register_conversation_handler = ConversationHandler(
     entry_points=[
