@@ -1,14 +1,17 @@
 from notion_client import Client
 from config import NOTION_TOKEN, NOTION_DATABASE_ID
 import logging
+from bot.utils.logger import log_action
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 notion = Client(auth=NOTION_TOKEN)
 
+
 async def add_user_to_notion(user_data: dict) -> str:
-    """Создание записи с возвратом page_id"""
+    user_id = user_data.get('telegram_id')
+    log_action("notion_add_user_attempt", user_id)
+
     try:
         required_fields = ['telegram_id', 'username', 'language', 'name', 'email', 'status']
         if not all(k in user_data for k in required_fields):
@@ -26,19 +29,29 @@ async def add_user_to_notion(user_data: dict) -> str:
                 "Registration Date": {"date": {"start": user_data["reg_date"]}}
             }
         )
+
+        log_action("notion_add_user_success", user_id, {
+            "page_id": response['id']
+        })
         return response['id']
     except Exception as e:
+        log_action("notion_add_user_failed", user_id, {
+            "error": str(e)
+        })
         logger.error(f"Notion create error: {str(e)}", exc_info=True)
         raise
 
+
 async def update_user_in_notion(page_id: str, update_data: dict):
-    """Обновление записи с расширенной обработкой ошибок"""
-    properties = {
-        "Name": {"title": [{"text": {"content": update_data["name"]}}]},
-        "Email": {"email": update_data["email"]}
-    }
+    user_id = update_data.get('telegram_id')
+    log_action("notion_update_user_attempt", user_id)
 
     try:
+        properties = {
+            "Name": {"title": [{"text": {"content": update_data["name"]}}]},
+            "Email": {"email": update_data["email"]}
+        }
+
         if not all([update_data.get('name'), update_data.get('email')]):
             raise ValueError("Missing required fields")
 
@@ -50,13 +63,19 @@ async def update_user_in_notion(page_id: str, update_data: dict):
         if not response.get('id'):
             raise Exception("Notion returned empty response")
 
+        log_action("notion_update_user_success", user_id)
         return True
     except Exception as e:
+        log_action("notion_update_user_failed", user_id, {
+            "error": str(e)
+        })
         logger.error(f"Notion update failed: {e}", exc_info=True)
         return False
 
+
 async def get_user_data(telegram_id: int):
-    """Получаем данные пользователя по Telegram ID"""
+    log_action("notion_get_user_attempt", telegram_id)
+
     try:
         response = notion.databases.query(
             database_id=NOTION_DATABASE_ID,
@@ -67,12 +86,13 @@ async def get_user_data(telegram_id: int):
         )
 
         if not response["results"]:
+            log_action("notion_user_not_found", telegram_id)
             return None
 
         page = response["results"][0]
         properties = page["properties"]
 
-        return {
+        user_data = {
             "name": _get_title(properties["Name"]),
             "email": properties["Email"]["email"],
             "status": properties["Status"]["select"]["name"],
@@ -80,12 +100,20 @@ async def get_user_data(telegram_id: int):
             "username": _get_rich_text(properties["Username"]),
             "language": properties["Language"]["select"]["name"]
         }
+
+        log_action("notion_get_user_success", telegram_id)
+        return user_data
     except Exception as e:
+        log_action("notion_get_user_failed", telegram_id, {
+            "error": str(e)
+        })
         logger.error(f"Notion query error: {e}")
         return None
 
+
 def _get_title(title_property):
     return title_property["title"][0]["text"]["content"] if title_property["title"] else ""
+
 
 def _get_rich_text(rich_text_property):
     return rich_text_property["rich_text"][0]["text"]["content"] if rich_text_property["rich_text"] else ""

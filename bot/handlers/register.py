@@ -12,18 +12,24 @@ from telegram.ext import (
 from bot.database.notion_db import add_user_to_notion, get_user_data
 from bot.handlers.shared import get_user_language
 from bot.utils.languages import LANGUAGES
-from bot.utils.keyboards import get_already_registered_keyboard, get_main_menu_keyboard
+from bot.utils.keyboards import get_already_registered_keyboard
+from bot.utils.logger import log_action
 
 logger = logging.getLogger(__name__)
 NAME, EMAIL = range(2)
 
+
 async def start_register_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    log_action("register_started", user_id)
+
     try:
         query = update.callback_query
         await query.answer()
 
-        existing_user = await get_user_data(update.effective_user.id)
+        existing_user = await get_user_data(user_id)
         if existing_user:
+            log_action("register_attempt", user_id, {"status": "already_registered"})
             lang = context.user_data.get('lang', 'ru')
             await query.edit_message_text(
                 LANGUAGES[lang]["already_registered"],
@@ -35,7 +41,7 @@ async def start_register_callback(update: Update, context: ContextTypes.DEFAULT_
             raise ValueError("Language not selected")
 
         context.user_data.update({
-            'telegram_id': update.effective_user.id,
+            'telegram_id': user_id,
             'username': update.effective_user.username or "",
             'language': context.user_data['lang'],
             'messages_to_delete': [query.message.message_id],
@@ -43,33 +49,42 @@ async def start_register_callback(update: Update, context: ContextTypes.DEFAULT_
         })
 
         await query.edit_message_text(LANGUAGES[context.user_data['lang']]["enter_name"])
+        log_action("register_name_requested", user_id)
         return NAME
 
     except Exception as e:
+        log_action("register_failed", user_id, {"error": str(e)})
         logger.error(f"Registration start failed: {str(e)}", exc_info=True)
         if update.callback_query and update.callback_query.message:
             await update.callback_query.message.reply_text("❌ Ошибка начала регистрации")
         return ConversationHandler.END
 
+
 async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
     try:
         if not update.message or not update.message.text:
             raise ValueError("Invalid name input")
 
-        context.user_data['name'] = update.message.text.strip()
+        name = update.message.text.strip()
+        context.user_data['name'] = name
         context.user_data.setdefault('messages_to_delete', []).append(update.message.message_id)
 
         lang = get_user_language(context)
         msg = await update.message.reply_text(LANGUAGES[lang]["enter_email"])
         context.user_data['messages_to_delete'].append(msg.message_id)
 
+        log_action("register_name_received", user_id, {"name": name})
         return EMAIL
     except Exception as e:
+        log_action("register_name_error", user_id, {"error": str(e)})
         logger.error(f"Name input error: {e}", exc_info=True)
         await handle_registration_failure(update, context)
         return ConversationHandler.END
 
+
 async def get_email(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
     try:
         required_keys = ['name', 'telegram_id', 'username', 'language']
         if not all(key in context.user_data for key in required_keys):
@@ -82,6 +97,7 @@ async def get_email(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data.setdefault('messages_to_delete', []).append(update.message.message_id)
 
         if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+            log_action("register_email_invalid", user_id, {"email": email})
             raise ValueError("Invalid email format")
 
         context.user_data['status'] = "Зарегистрирован"
@@ -102,20 +118,29 @@ async def get_email(update: Update, context: ContextTypes.DEFAULT_TYPE):
         from bot.handlers.menu import show_main_menu
         await show_main_menu(update, context)
 
+        log_action("register_success", user_id, {
+            "email": email,
+            "username": context.user_data['username']
+        })
         return ConversationHandler.END
 
     except ValueError as e:
+        log_action("register_validation_error", user_id, {
+            "field": "email",
+            "error": str(e)
+        })
         logger.warning(f"Validation error: {e}", exc_info=True)
         error_msg = await update.message.reply_text("❌ Неверный формат email. Попробуйте снова:")
         context.user_data.setdefault('messages_to_delete', []).append(error_msg.message_id)
         return EMAIL
     except Exception as e:
+        log_action("register_failed", user_id, {"error": str(e)})
         logger.error(f"Registration failed: {str(e)}", exc_info=True)
         await handle_registration_failure(update, context)
         return ConversationHandler.END
 
+
 async def cleanup_messages(context, chat_id):
-    """Удаляет все сообщения из списка messages_to_delete"""
     if 'messages_to_delete' not in context.user_data:
         return
 
@@ -127,15 +152,20 @@ async def cleanup_messages(context, chat_id):
 
     del context.user_data['messages_to_delete']
 
+
 async def handle_registration_failure(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
     try:
         await cleanup_messages(context, update.effective_chat.id)
         if update.message:
             await update.message.reply_text(
                 "❌ Ошибка регистрации. Начните заново командой /start"
             )
+        log_action("register_cleanup_complete", user_id)
     except Exception as e:
+        log_action("register_cleanup_failed", user_id, {"error": str(e)})
         logger.error(f"Failure handling error: {e}", exc_info=True)
+
 
 register_conversation_handler = ConversationHandler(
     entry_points=[

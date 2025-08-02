@@ -4,29 +4,45 @@ from bot.database.notion_db import get_user_data
 from bot.utils.languages import LANGUAGES
 from bot.handlers.menu import show_main_menu
 from bot.utils.keyboards import get_welcome_keyboard
+from bot.utils.logger import log_action
+
 
 async def language_selection(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
     query = update.callback_query
     await query.answer()
 
     lang = query.data.split("_")[-1]
-    context.user_data["lang"] = lang
+    log_action("language_selected", user_id, {"language": lang})
 
-    # Проверяем регистрацию
-    user_data = await get_user_data(update.effective_user.id)
+    context.user_data["lang"] = lang
+    user_data = await get_user_data(user_id)
+
     if user_data and user_data.get("status") == "Зарегистрирован":
+        log_action("user_authenticated", user_id)
         context.user_data['registered'] = True
         await show_main_menu(update, context)
     else:
+        log_action("user_not_authenticated", user_id)
         await query.edit_message_text(
             text=LANGUAGES[lang]["welcome"],
             reply_markup=get_welcome_keyboard(lang)
         )
 
+
 async def main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    await show_main_menu(update, context)
+    user_id = update.effective_user.id
+    log_action("main_menu_request", user_id)
+
+    try:
+        query = update.callback_query
+        await query.answer()
+        await show_main_menu(update, context)
+        log_action("main_menu_shown", user_id)
+    except Exception as e:
+        log_action("main_menu_error", user_id, {"error": str(e)})
+        raise
+
 
 handlers = [
     CallbackQueryHandler(language_selection, pattern="^set_lang_"),
