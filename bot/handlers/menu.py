@@ -1,6 +1,5 @@
 import logging
 
-from bot.utils.languages import LANGUAGES
 from telegram import Update
 from telegram.ext import ContextTypes, CallbackQueryHandler
 from bot.utils.languages import LANGUAGES
@@ -68,7 +67,8 @@ async def show_products_menu(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
     await query.edit_message_text(
         text=LANGUAGES[lang]["products"],
-        reply_markup=get_products_menu_keyboard(lang)
+        reply_markup=get_products_menu_keyboard(lang),
+        parse_mode = 'HTML'
     )
 
 async def show_webinars_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -110,7 +110,8 @@ async def show_consultations_menu(update: Update, context: ContextTypes.DEFAULT_
 
     await query.edit_message_text(
         text=LANGUAGES[lang]["consultations_description"],
-        reply_markup=get_consultations_menu_keyboard(lang)
+        reply_markup=get_consultations_menu_keyboard(lang),
+        parse_mode = 'HTML'
     )
 
 async def show_mentoring_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -130,7 +131,8 @@ async def show_page_audit_menu(update: Update, context: ContextTypes.DEFAULT_TYP
 
     await query.edit_message_text(
         text=LANGUAGES[lang]["page_audit_description"],
-        reply_markup=get_page_audit_menu_keyboard(lang)
+        reply_markup=get_page_audit_menu_keyboard(lang),
+        parse_mode = 'HTML'
     )
 
 async def show_private_channel_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -140,7 +142,8 @@ async def show_private_channel_menu(update: Update, context: ContextTypes.DEFAUL
 
     await query.edit_message_text(
         text=LANGUAGES[lang]["private_channel_description"],
-        reply_markup=get_private_channel_menu_keyboard(lang)
+        reply_markup=get_private_channel_menu_keyboard(lang),
+        parse_mode = 'HTML'
     )
 
 async def show_payment_methods(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -154,7 +157,8 @@ async def show_payment_methods(update: Update, context: ContextTypes.DEFAULT_TYP
 
     await query.edit_message_text(
         text=LANGUAGES[lang]["choose_payment"],
-        reply_markup=get_payment_methods_keyboard(lang, webinar_id)
+        reply_markup=get_payment_methods_keyboard(lang, webinar_id),
+        parse_mode = 'HTML'
     )
 
 
