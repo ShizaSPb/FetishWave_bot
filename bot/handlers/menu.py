@@ -92,6 +92,7 @@ async def show_webinars_menu(update: Update, context: ContextTypes.DEFAULT_TYPE)
         [InlineKeyboardButton(LANGUAGES[lang]["webinar_psychology"], callback_data="webinar_psychology")],
         [InlineKeyboardButton(LANGUAGES[lang]["webinar_hypno"], callback_data="webinar_hypno")],
         [InlineKeyboardButton(LANGUAGES[lang]["webinar_sissy"], callback_data="webinar_sissy")],
+        [InlineKeyboardButton(LANGUAGES[lang]["webinar_all_packages"], callback_data="webinar_all_packages")],
         [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="menu_products")]
     ]
 
@@ -100,13 +101,6 @@ async def show_webinars_menu(update: Update, context: ContextTypes.DEFAULT_TYPE)
         reply_markup=InlineKeyboardMarkup(keyboard),
         parse_mode='HTML'
     )
-
-
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ContextTypes
-from bot.utils.languages import LANGUAGES
-from bot.data.webinar_descriptions import WEBINAR_DESCRIPTIONS
-
 
 async def show_webinar_details(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query

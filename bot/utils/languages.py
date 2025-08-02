@@ -52,6 +52,9 @@ LANGUAGES = {
         "cancel": "❌ Отменить",
         "select": "🔼 Выбрать",
         "buy": "💳 Купить",
+        "buy_part1": "💳 Купить Часть 1",
+        "buy_part2": "💳 Купить Часть 2",
+        "buy_both_parts": "💳 Купить обе Части",
         "details": "🔍 Подробнее",
 
         # Меню "Вебинары"
@@ -62,6 +65,7 @@ LANGUAGES = {
         "webinar_psychology": "✨ Психология нижнего, понять и привязать ✨",
         "webinar_hypno": "✨ Эротический гипноз ✨",
         "webinar_sissy": "🆕 Sissy, cuckold, chastity cage 🆕",
+        "webinar_all_packages": "🤑 Покупка ВСЕХ вебинаров со скидкой 🤑",
 
         # Новые тексты для системы оплаты
         "choose_payment": "💰 <b>Выберите способ оплаты:</b>",
@@ -150,6 +154,9 @@ LANGUAGES = {
         "cancel": "❌ Cancel",
         "select": "🔼 Select",
         "buy": "💳 Buy",
+        "buy_part1": "💳 Buy Part 1",
+        "buy_part2": "💳 Buy Part 2",
+        "buy_both_parts": "💳 Buy both Parts",
         "details": "🔍 Details",
 
         # Webinars menu
@@ -160,6 +167,7 @@ LANGUAGES = {
         "webinar_psychology": "✨ Psychology of the bottom, understand and bind ✨",
         "webinar_hypno": "✨ Erotic hypnosis ✨",
         "webinar_sissy": "🆕 Sissy, cuckold, chastity cage 🆕",
+        "webinar_all_packages": "🤑 Buy ALL webinars with discount 🤑",
 
         # New payment system texts
         "choose_payment": "💰 <b>Select payment method:</b>",
