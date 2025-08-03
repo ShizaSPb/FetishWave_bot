@@ -1,5 +1,7 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from bot.utils.languages import LANGUAGES
+import time
+
 
 def get_language_keyboard():
     """Клавиатура выбора языка"""
@@ -104,4 +106,30 @@ def get_already_registered_keyboard(lang):
     """Клавиатура для уже зарегистрированных пользователей"""
     return InlineKeyboardMarkup([
         [InlineKeyboardButton(LANGUAGES[lang]["menu_button"], callback_data="main_menu")]
+    ])
+
+# ЗДЕСЬ УНИКАЛЬНЫЕ КНОПКИ ДЛЯ ВЕБА С ГИПНОЗОМ
+def get_hypno_webinar_keyboard(lang):
+    """Клавиатура выбора частей вебинара"""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(LANGUAGES[lang]["buy_part1"], callback_data="hypno_part:1")],
+        [InlineKeyboardButton(LANGUAGES[lang]["buy_part2"], callback_data="hypno_part:2")],
+        [InlineKeyboardButton(LANGUAGES[lang]["buy_both_parts"], callback_data="hypno_part:both")],
+        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="back_to_webinars")]
+    ])
+
+def get_hypno_payment_keyboard(lang, part):
+    """Клавиатура выбора валюты для конкретной части"""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(LANGUAGES[lang]["payment_rub"], callback_data=f"hypno_pay:rub:{part}")],
+        [InlineKeyboardButton(LANGUAGES[lang]["payment_crypto"], callback_data=f"hypno_pay:crypto:{part}")],
+        [InlineKeyboardButton(LANGUAGES[lang]["payment_eur"], callback_data=f"hypno_pay:eur:{part}")],
+        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="back_to_hypno_parts")]
+    ])
+
+def get_back_to_hypno_payment_keyboard(lang, part):
+    """Клавиатура с кнопкой возврата к выбору валюты для гипноза"""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(LANGUAGES[lang]["back"],
+         callback_data=f"hypno_back_to_payment_{part}")]
     ])

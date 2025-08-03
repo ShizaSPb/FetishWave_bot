@@ -55,7 +55,12 @@ LANGUAGES = {
         "buy_part1": "💳 Купить Часть 1",
         "buy_part2": "💳 Купить Часть 2",
         "buy_both_parts": "💳 Купить обе Части",
+        "back_to_webinar": "🔙 Назад к вебинару",
         "details": "🔍 Подробнее",
+
+        "part_1": "Часть 1",
+        "part_2": "Часть 2",
+        "part_both": "обе Части",
 
         # Меню "Вебинары"
         "default_description": "Описание вебинара",
@@ -157,7 +162,12 @@ LANGUAGES = {
         "buy_part1": "💳 Buy Part 1",
         "buy_part2": "💳 Buy Part 2",
         "buy_both_parts": "💳 Buy both Parts",
+        "back_to_webinar": "🔙 Back to webinar",
         "details": "🔍 Details",
+
+        "part_1": "Part 1",
+        "part_2": "Part 2",
+        "part_both": "both Parts",
 
         # Webinars menu
         "default_description": "Webinar description",
