@@ -44,7 +44,8 @@ def get_webinars_menu_keyboard(lang):
         [InlineKeyboardButton(LANGUAGES[lang]["webinar_femdom"], callback_data="webinar_femdom")],
         [InlineKeyboardButton(LANGUAGES[lang]["webinar_joi"], callback_data="webinar_joi")],
         [InlineKeyboardButton(LANGUAGES[lang]["webinar_psychology"], callback_data="webinar_psychology")],
-        [InlineKeyboardButton(LANGUAGES[lang]["webinar_hypno"], callback_data="webinar_hypno")],
+        # Измените эту строку:
+        [InlineKeyboardButton(LANGUAGES[lang]["webinar_hypno"], callback_data="hypno_webinar")],  # Было "webinar_hypno"
         [InlineKeyboardButton(LANGUAGES[lang]["webinar_sissy"], callback_data="webinar_sissy")],
         [InlineKeyboardButton(LANGUAGES[lang]["webinar_all_packages"], callback_data="webinar_all_packages")],
         [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="menu_products")]
@@ -128,7 +129,7 @@ def get_hypno_payment_keyboard(lang, part):
     ])
 
 def get_back_to_hypno_payment_keyboard(lang, part):
-    """Клавиатура с кнопкой возврата к выбору валюты для гипноза"""
+    """Клавиатура с кнопкой возврата к выбору валюты"""
     return InlineKeyboardMarkup([
         [InlineKeyboardButton(LANGUAGES[lang]["back"],
          callback_data=f"hypno_back_to_payment_{part}")]

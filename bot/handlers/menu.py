@@ -444,38 +444,132 @@ async def handle_hypno_part_selection(update: Update, context: ContextTypes.DEFA
         await query.answer("⚠️ Ошибка при выборе части")
 
 
-async def handle_hypno_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработка выбора способа оплаты"""
+async def show_hypno_rub_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    log_action("hypno_rub_payment_open", user_id)
+
     try:
         query = update.callback_query
         await query.answer()
+        lang = context.user_data.get('lang', 'ru')
 
-        # Парсим данные: hypno_pay:валюта:часть
-        _, currency, part = query.data.split(":")
+        # Получаем выбранную часть
+        _, _, part = query.data.split(":")
+        context.user_data['current_hypno_part'] = part
 
-        # Здесь добавьте логику обработки платежа
+        # Формируем текст с реквизитами и информацией о части
+        payment_text = (
+            f"💰 <b>Оплата {LANGUAGES[lang][f'part_{part}']} в рублях</b>\n\n"
+            f"{LANGUAGES[lang]['payment_rub_details']}"
+        )
+
         await query.edit_message_text(
-            text=f"ℹ️ Вы выбрали оплату {part} части в {currency}\n\nРеквизиты будут отправлены...",
+            text=payment_text,
+            reply_markup=get_back_to_hypno_payment_keyboard(lang, part),
+            parse_mode='HTML'
+        )
+        log_action("hypno_rub_payment_shown", user_id, {"part": part})
+    except Exception as e:
+        log_action("hypno_rub_payment_error", user_id, {"error": str(e)})
+        logger.error(f"Error in show_hypno_rub_payment: {e}", exc_info=True)
+        await query.answer("⚠️ Ошибка при загрузке реквизитов")
+
+
+async def show_hypno_crypto_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    log_action("hypno_crypto_payment_open", user_id)
+
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+
+        _, _, part = query.data.split(":")
+        context.user_data['current_hypno_part'] = part
+
+        payment_text = (
+            f"💰 <b>Оплата {LANGUAGES[lang][f'part_{part}']} криптовалютой</b>\n\n"
+            f"{LANGUAGES[lang]['payment_crypto_details']}"
+        )
+
+        await query.edit_message_text(
+            text=payment_text,
+            reply_markup=get_back_to_hypno_payment_keyboard(lang, part),
             parse_mode='HTML'
         )
     except Exception as e:
-        logger.error(f"Error in handle_hypno_payment: {e}")
-        await query.answer("⚠️ Ошибка при выборе оплаты")
+        logger.error(f"Error in show_hypno_crypto_payment: {e}")
+        await query.answer("⚠️ Ошибка при загрузке реквизитов")
+
+
+async def show_hypno_eur_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    log_action("hypno_eur_payment_open", user_id)
+
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+
+        _, _, part = query.data.split(":")
+        context.user_data['current_hypno_part'] = part
+
+        payment_text = (
+            f"💰 <b>Оплата {LANGUAGES[lang][f'part_{part}']} в евро</b>\n\n"
+            f"{LANGUAGES[lang]['payment_eur_details']}"
+        )
+
+        await query.edit_message_text(
+            text=payment_text,
+            reply_markup=get_back_to_hypno_payment_keyboard(lang, part),
+            parse_mode='HTML'
+        )
+    except Exception as e:
+        logger.error(f"Error in show_hypno_eur_payment: {e}")
+        await query.answer("⚠️ Ошибка при загрузке реквизитов")
+
+
+async def back_to_hypno_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Возврат к выбору валюты для гипноза"""
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+        part = query.data.replace("hypno_back_to_payment_", "")
+
+        await query.edit_message_text(
+            text=f"💰 <b>Оплата {LANGUAGES[lang][f'part_{part}']}</b>\n\nВыберите способ оплаты:",
+            reply_markup=get_hypno_payment_keyboard(lang, part),
+            parse_mode='HTML'
+        )
+    except Exception as e:
+        logger.error(f"Error in back_to_hypno_payment: {e}")
+        await query.answer("⚠️ Ошибка при возврате")
 
 
 
 handlers = [
-    CallbackQueryHandler(show_webinar_details, pattern="^webinar_details_"),
-
-# ЗДЕСЬ УНИКАЛЬНЫЕ ОБРАБОТЧИКИ ДЛЯ ВЕБА С ГИПНОЗОМ
-    CallbackQueryHandler(show_hypno_webinar, pattern="^webinar_hypno$"),
+    # Обработчики для гипноза (должны быть ПЕРВЫМИ)
+    CallbackQueryHandler(show_hypno_webinar, pattern="^hypno_webinar$"),
     CallbackQueryHandler(handle_hypno_part_selection, pattern="^hypno_part:"),
-    CallbackQueryHandler(handle_hypno_payment, pattern="^hypno_pay:"),
+    CallbackQueryHandler(show_hypno_rub_payment, pattern="^hypno_pay:rub:"),
+    CallbackQueryHandler(show_hypno_crypto_payment, pattern="^hypno_pay:crypto:"),
+    CallbackQueryHandler(show_hypno_eur_payment, pattern="^hypno_pay:eur:"),
+    CallbackQueryHandler(back_to_hypno_payment, pattern="^hypno_back_to_payment_"),
     CallbackQueryHandler(back_to_webinars, pattern="^back_to_webinars$"),
     CallbackQueryHandler(back_to_hypno_parts, pattern="^back_to_hypno_parts$"),
 
+    # Обработчики для деталей вебинаров
+    CallbackQueryHandler(show_webinar_details, pattern="^webinar_details_"),
+    CallbackQueryHandler(show_webinar_details, pattern="^webinar_"),  # Общий обработчик для остальных вебинаров
 
-    CallbackQueryHandler(show_webinar_details, pattern="^webinar_"),
+    # Остальные обработчики вебинаров
+    CallbackQueryHandler(show_payment_methods, pattern="^payment_methods_"),
+    CallbackQueryHandler(show_rub_payment, pattern="^pay_rub_"),
+    CallbackQueryHandler(show_crypto_payment, pattern="^pay_crypto_"),
+    CallbackQueryHandler(show_eur_payment, pattern="^pay_eur_"),
+
+    # Основные меню
     CallbackQueryHandler(show_main_menu, pattern="^main_menu$"),
     CallbackQueryHandler(show_products_menu, pattern="^menu_products$"),
     CallbackQueryHandler(show_webinars_menu, pattern="^menu_webinars$"),
@@ -483,8 +577,4 @@ handlers = [
     CallbackQueryHandler(show_mentoring_menu, pattern="^menu_mentoring$"),
     CallbackQueryHandler(show_page_audit_menu, pattern="^menu_page_audit$"),
     CallbackQueryHandler(show_private_channel_menu, pattern="^menu_private_channel$"),
-    CallbackQueryHandler(show_payment_methods, pattern="^payment_methods_"),
-    CallbackQueryHandler(show_rub_payment, pattern="^pay_rub_"),
-    CallbackQueryHandler(show_crypto_payment, pattern="^pay_crypto_"),
-    CallbackQueryHandler(show_eur_payment, pattern="^pay_eur_"),
 ]
