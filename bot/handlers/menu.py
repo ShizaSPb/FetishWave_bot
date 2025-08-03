@@ -356,42 +356,27 @@ async def show_eur_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # ЗДЕСЬ УНИКАЛЬНАЯ ЛОГИКА ДЛЯ ВЕБА С ГИПНОЗОМ
 
 
-async def show_hypno_webinar(update: Update, context: ContextTypes.DEFAULT_TYPE, is_back_action: bool = False):
-    """Улучшенная версия с правильной обработкой возврата"""
+async def show_hypno_webinar(update: Update, context: ContextTypes.DEFAULT_TYPE):  # Убрали параметр
     try:
         user_id = update.effective_user.id
         query = update.callback_query
         await query.answer()
         lang = context.user_data.get('lang', 'ru')
 
-        # Для действия "Назад" используем специальный текст
-        if is_back_action:
-            webinar_text = "↩️ <b>Возврат к вебинару по гипнозу</b>\n\nВыберите часть для покупки:"
-        else:
-            webinar_text = "🎭 <b>Вебинар по эротическому гипнозу</b>\n\nВыберите часть для покупки:"
+        webinar_text = WEBINAR_DESCRIPTIONS.get(lang, {}).get(
+            "webinar_hypno",
+        )
 
-        reply_markup = get_hypno_webinar_keyboard(lang)
-
-        try:
-            await query.edit_message_text(
-                text=webinar_text,
-                reply_markup=reply_markup,
-                parse_mode='HTML'
-            )
-            log_action("hypno_webinar_shown", user_id, {"action": "back" if is_back_action else "open"})
-
-        except telegram.error.BadRequest as e:
-            if "Message is not modified" in str(e):
-                # Если сообщение не изменилось, просто игнорируем
-                return
-            raise
+        await query.edit_message_text(
+            text=webinar_text,
+            reply_markup=get_hypno_webinar_keyboard(lang),
+            parse_mode='HTML'
+        )
+        log_action("hypno_webinar_shown", user_id)  # Упрощенное логирование
 
     except Exception as e:
         log_action("hypno_webinar_error", user_id, {"error": str(e)})
-        try:
-            await query.answer("⚠️ Ошибка при обновлении")
-        except:
-            pass
+        await query.answer("⚠️ Ошибка при обновлении")
 
 
 async def show_hypno_payment_methods(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -424,24 +409,36 @@ async def back_to_hypno_parts(update: Update, context: ContextTypes.DEFAULT_TYPE
 
 
 async def handle_hypno_part_selection(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработка выбора части вебинара"""
+    """Обработка выбора части вебинара с загрузкой описания"""
     try:
         query = update.callback_query
         await query.answer()
         lang = context.user_data.get('lang', 'ru')
+        part = query.data.split(":")[1]  # "1", "2" или "both"
 
-        # Парсим выбранную часть (1, 2 или both)
-        part = query.data.split(":")[1]
-        context.user_data['current_hypno_part'] = part
+        # Формируем ключ для описания
+        description_key = f"webinar_hypno_part_{part}"
+        description = WEBINAR_DESCRIPTIONS.get(lang, {}).get(
+            description_key,
+            f"Описание части {part} не найдено"  # Fallback текст
+        )
+
+        # Формируем полное сообщение
+        message_text = (
+            f"💰 <b>Оплата {LANGUAGES[lang][f'part_{part}']}</b>\n\n"
+            f"{description}\n\n"
+            "Выберите способ оплаты:"
+        )
 
         await query.edit_message_text(
-            text=f"💰 <b>Оплата {LANGUAGES[lang][f'part_{part}']}</b>\n\nВыберите способ оплаты:",
+            text=message_text,
             reply_markup=get_hypno_payment_keyboard(lang, part),
             parse_mode='HTML'
         )
+
     except Exception as e:
         logger.error(f"Error in handle_hypno_part_selection: {e}")
-        await query.answer("⚠️ Ошибка при выборе части")
+        await query.answer("⚠️ Ошибка при загрузке описания")
 
 
 async def show_hypno_rub_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -530,18 +527,33 @@ async def show_hypno_eur_payment(update: Update, context: ContextTypes.DEFAULT_T
 
 
 async def back_to_hypno_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Возврат к выбору валюты для гипноза"""
+    """Возврат к выбору валюты с сохранением описания части"""
     try:
         query = update.callback_query
         await query.answer()
         lang = context.user_data.get('lang', 'ru')
         part = query.data.replace("hypno_back_to_payment_", "")
 
+        # Загружаем описание части
+        description_key = f"webinar_hypno_part_{part}"
+        description = WEBINAR_DESCRIPTIONS.get(lang, {}).get(
+            description_key,
+            f"Описание части {part} не найдено"  # Fallback
+        )
+
+        # Формируем полное сообщение как при первоначальном выборе
+        message_text = (
+            f"💰 <b>Оплата {LANGUAGES[lang][f'part_{part}']}</b>\n\n"
+            f"{description}\n\n"
+            "Выберите способ оплаты:"
+        )
+
         await query.edit_message_text(
-            text=f"💰 <b>Оплата {LANGUAGES[lang][f'part_{part}']}</b>\n\nВыберите способ оплаты:",
+            text=message_text,
             reply_markup=get_hypno_payment_keyboard(lang, part),
             parse_mode='HTML'
         )
+
     except Exception as e:
         logger.error(f"Error in back_to_hypno_payment: {e}")
         await query.answer("⚠️ Ошибка при возврате")
