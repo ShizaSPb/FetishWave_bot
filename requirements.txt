@@ -58,4 +58,5 @@ spglib==2.6.0
 python-dotenv==1.1.1
 self==2020.12.3
 logger==1.4
-pytest~=8.4.1
+pytest==8.4.1
+email-validator==2.2.0

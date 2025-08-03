@@ -3,7 +3,7 @@ from .callback import handlers as callback_handlers
 from .view_data import view_data_handler
 
 def get_handlers():
-    from .register import register_conversation_handler
+    from .registration import register_conversation_handler
     from .menu import handlers as menu_handlers
     return [
         start_handler,
