@@ -1,6 +1,5 @@
 import logging
 
-import telegram
 from telegram import Update
 from telegram.ext import ContextTypes, CallbackQueryHandler
 from bot.utils.languages import LANGUAGES
@@ -20,7 +19,10 @@ from bot.utils.keyboards import (
     get_welcome_keyboard,
     get_hypno_webinar_keyboard,
     get_hypno_payment_keyboard,
-    get_back_to_hypno_payment_keyboard
+    get_back_to_hypno_payment_keyboard,
+    get_femdom_webinar_keyboard,
+    get_femdom_payment_keyboard,
+    get_back_to_femdom_payment_keyboard
 )
 from bot.utils.logger import log_action
 
@@ -559,9 +561,176 @@ async def back_to_hypno_payment(update: Update, context: ContextTypes.DEFAULT_TY
         await query.answer("⚠️ Ошибка при возврате")
 
 
+# ЗДЕСЬ УНИКАЛЬНАЯ ЛОГИКА ДЛЯ ВЕБА ПО ФЕМДОМУ
+
+async def show_femdom_webinar(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        user_id = update.effective_user.id
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+
+        webinar_text = WEBINAR_DESCRIPTIONS.get(lang, {}).get("webinar_femdom")
+
+        await query.edit_message_text(
+            text=webinar_text,
+            reply_markup=get_femdom_webinar_keyboard(lang),
+            parse_mode='HTML'
+        )
+        log_action("femdom_webinar_shown", user_id)
+    except Exception as e:
+        log_action("femdom_webinar_error", user_id, {"error": str(e)})
+        await query.answer("⚠️ Ошибка при обновлении")
+
+
+async def handle_femdom_part_selection(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+        part = query.data.split(":")[1]
+
+        description_key = f"webinar_femdom_part_{part}"
+        description = WEBINAR_DESCRIPTIONS.get(lang, {}).get(
+            description_key,
+            f"Описание части {part} не найдено"
+        )
+
+        message_text = (
+            f"💰 <b>Оплата {LANGUAGES[lang][f'part_{part}']}</b>\n\n"
+            f"{description}\n\n"
+            "Выберите способ оплаты:"
+        )
+
+        await query.edit_message_text(
+            text=message_text,
+            reply_markup=get_femdom_payment_keyboard(lang, part),
+            parse_mode='HTML'
+        )
+    except Exception as e:
+        logger.error(f"Error in handle_femdom_part_selection: {e}")
+        await query.answer("⚠️ Ошибка при загрузке описания")
+
+
+async def show_femdom_rub_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    log_action("femdom_rub_payment_open", user_id)
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+        _, _, part = query.data.split(":")
+        context.user_data['current_femdom_part'] = part
+
+        payment_text = (
+            f"💰 <b>Оплата {LANGUAGES[lang][f'part_{part}']} в рублях</b>\n\n"
+            f"{LANGUAGES[lang]['payment_rub_details']}"
+        )
+
+        await query.edit_message_text(
+            text=payment_text,
+            reply_markup=get_back_to_femdom_payment_keyboard(lang, part),
+            parse_mode='HTML'
+        )
+    except Exception as e:
+        log_action("femdom_rub_payment_error", user_id, {"error": str(e)})
+        await query.answer("⚠️ Ошибка при загрузке реквизитов")
+
+
+async def show_femdom_crypto_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    log_action("femdom_crypto_payment_open", user_id)
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+        _, _, part = query.data.split(":")
+        context.user_data['current_femdom_part'] = part
+
+        payment_text = (
+            f"💰 <b>Оплата {LANGUAGES[lang][f'part_{part}']} криптовалютой</b>\n\n"
+            f"{LANGUAGES[lang]['payment_crypto_details']}"
+        )
+
+        await query.edit_message_text(
+            text=payment_text,
+            reply_markup=get_back_to_femdom_payment_keyboard(lang, part),
+            parse_mode='HTML'
+        )
+    except Exception as e:
+        logger.error(f"Error in show_femdom_crypto_payment: {e}")
+        await query.answer("⚠️ Ошибка при загрузке реквизитов")
+
+
+async def show_femdom_eur_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    log_action("femdom_eur_payment_open", user_id)
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+        _, _, part = query.data.split(":")
+        context.user_data['current_femdom_part'] = part
+
+        payment_text = (
+            f"💰 <b>Оплата {LANGUAGES[lang][f'part_{part}']} в евро</b>\n\n"
+            f"{LANGUAGES[lang]['payment_eur_details']}"
+        )
+
+        await query.edit_message_text(
+            text=payment_text,
+            reply_markup=get_back_to_femdom_payment_keyboard(lang, part),
+            parse_mode='HTML'
+        )
+    except Exception as e:
+        logger.error(f"Error in show_femdom_eur_payment: {e}")
+        await query.answer("⚠️ Ошибка при загрузке реквизитов")
+
+
+async def back_to_femdom_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+        part = query.data.replace("femdom_back_to_payment_", "")
+
+        description_key = f"webinar_femdom_part_{part}"
+        description = WEBINAR_DESCRIPTIONS.get(lang, {}).get(
+            description_key,
+            f"Описание части {part} не найдено"
+        )
+
+        message_text = (
+            f"💰 <b>Оплата {LANGUAGES[lang][f'part_{part}']}</b>\n\n"
+            f"{description}\n\n"
+            "Выберите способ оплаты:"
+        )
+
+        await query.edit_message_text(
+            text=message_text,
+            reply_markup=get_femdom_payment_keyboard(lang, part),
+            parse_mode='HTML'
+        )
+    except Exception as e:
+        logger.error(f"Error in back_to_femdom_payment: {e}")
+        await query.answer("⚠️ Ошибка при возврате")
+
+
+async def back_to_femdom_parts(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await show_femdom_webinar(update, context)
+
 
 handlers = [
-    # Обработчики для гипноза (должны быть ПЕРВЫМИ)
+    # Обработчики для Femdom (должны быть перед гипнозом)
+    CallbackQueryHandler(show_femdom_webinar, pattern="^femdom_webinar$"),
+    CallbackQueryHandler(handle_femdom_part_selection, pattern="^femdom_part:"),
+    CallbackQueryHandler(show_femdom_rub_payment, pattern="^femdom_pay:rub:"),
+    CallbackQueryHandler(show_femdom_crypto_payment, pattern="^femdom_pay:crypto:"),
+    CallbackQueryHandler(show_femdom_eur_payment, pattern="^femdom_pay:eur:"),
+    CallbackQueryHandler(back_to_femdom_payment, pattern="^femdom_back_to_payment_"),
+    CallbackQueryHandler(back_to_femdom_parts, pattern="^back_to_femdom_parts$"),
+
+    # Обработчики для гипноза (должны до основных)
     CallbackQueryHandler(show_hypno_webinar, pattern="^hypno_webinar$"),
     CallbackQueryHandler(handle_hypno_part_selection, pattern="^hypno_part:"),
     CallbackQueryHandler(show_hypno_rub_payment, pattern="^hypno_pay:rub:"),

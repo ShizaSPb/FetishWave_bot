@@ -33,6 +33,16 @@ WEBINAR_DESCRIPTIONS = {
             "Оба - $165 $150 или 16500 15000."
         ),
 
+        "webinar_femdom_part_1": (
+            "✨ Подробное описание части 1 Femdom..."
+        ),
+        "webinar_femdom_part_2": (
+            "✨ Подробное описание части 2 Femdom..."
+        ),
+        "webinar_femdom_part_both": (
+            "✨ Описание полного пакета Femdom..."
+        ),
+
         "webinar_joi": (
             "<b>✨ JOI, CEI, SPH: виды, идеи, техники ✨</b>\n\n"
             
@@ -222,6 +232,17 @@ WEBINAR_DESCRIPTIONS = {
             "• Case studies\n\n"
             "💡 2 hours of content + bonus materials"
         ),
+
+        "webinar_femdom_part_1": (
+            "✨ Подробное описание части 1 Femdom..."
+        ),
+        "webinar_femdom_part_2": (
+            "✨ Подробное описание части 2 Femdom..."
+        ),
+        "webinar_femdom_part_both": (
+            "✨ Описание полного пакета Femdom..."
+        ),
+
         "webinar_joi": (
             "<b>✨ JOI, CEI, SPH: types, ideas, techniques ✨</b>\n\n"
             "Complete guide to femdom sexting:\n"

@@ -1,6 +1,5 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from bot.utils.languages import LANGUAGES
-import time
 
 
 def get_language_keyboard():
@@ -41,10 +40,10 @@ def get_products_menu_keyboard(lang):
 def get_webinars_menu_keyboard(lang):
     """Клавиатура меню вебинаров"""
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton(LANGUAGES[lang]["webinar_femdom"], callback_data="webinar_femdom")],
+        [InlineKeyboardButton(LANGUAGES[lang]["webinar_femdom"], callback_data="femdom_webinar")],
         [InlineKeyboardButton(LANGUAGES[lang]["webinar_joi"], callback_data="webinar_joi")],
         [InlineKeyboardButton(LANGUAGES[lang]["webinar_psychology"], callback_data="webinar_psychology")],
-        # Измените эту строку:
+
         [InlineKeyboardButton(LANGUAGES[lang]["webinar_hypno"], callback_data="hypno_webinar")],
         [InlineKeyboardButton(LANGUAGES[lang]["webinar_sissy"], callback_data="webinar_sissy")],
         [InlineKeyboardButton(LANGUAGES[lang]["webinar_all_packages"], callback_data="webinar_all_packages")],
@@ -110,6 +109,7 @@ def get_already_registered_keyboard(lang):
     ])
 
 # ЗДЕСЬ УНИКАЛЬНЫЕ КНОПКИ ДЛЯ ВЕБА С ГИПНОЗОМ
+
 def get_hypno_webinar_keyboard(lang):
     """Клавиатура выбора частей вебинара"""
     return InlineKeyboardMarkup([
@@ -134,5 +134,34 @@ def get_back_to_hypno_payment_keyboard(lang, part):
         [InlineKeyboardButton(
             LANGUAGES[lang]["back"],
             callback_data=f"hypno_back_to_payment_{part}"  # Важно сохранять part!
+        )]
+    ])
+
+# ЗДЕСЬ УНИКАЛЬНЫЕ КНОПКИ ДЛЯ ВЕБА ПО ФЕМДОМУ
+
+def get_femdom_webinar_keyboard(lang):
+    """Клавиатура выбора частей вебинара для Femdom"""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(LANGUAGES[lang]["buy_part1"], callback_data="femdom_part:1")],
+        [InlineKeyboardButton(LANGUAGES[lang]["buy_part2"], callback_data="femdom_part:2")],
+        [InlineKeyboardButton(LANGUAGES[lang]["buy_both_parts"], callback_data="femdom_part:both")],
+        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="back_to_webinars")]
+    ])
+
+def get_femdom_payment_keyboard(lang, part):
+    """Клавиатура выбора валюты для конкретной части Femdom"""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(LANGUAGES[lang]["payment_rub"], callback_data=f"femdom_pay:rub:{part}")],
+        [InlineKeyboardButton(LANGUAGES[lang]["payment_crypto"], callback_data=f"femdom_pay:crypto:{part}")],
+        [InlineKeyboardButton(LANGUAGES[lang]["payment_eur"], callback_data=f"femdom_pay:eur:{part}")],
+        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="back_to_femdom_parts")]
+    ])
+
+def get_back_to_femdom_payment_keyboard(lang, part):
+    """Клавиатура с кнопкой возврата к выбору валюты для Femdom"""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(
+            LANGUAGES[lang]["back"],
+            callback_data=f"femdom_back_to_payment_{part}"
         )]
     ])
