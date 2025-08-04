@@ -16,7 +16,8 @@ from bot.utils.keyboards import (
     get_back_to_menu_keyboard,
     get_personal_consultation_keyboard,
     get_company_consultation_keyboard,
-    get_consultation_payment_keyboard, get_mentoring_keyboard, get_mentoring_thanks_keyboard
+    get_consultation_payment_keyboard, get_mentoring_keyboard, get_mentoring_thanks_keyboard, get_audit_thanks_keyboard,
+    get_audit_keyboard
 )
 from bot.utils.logger import log_action
 from config import ADMIN_CHAT_ID
@@ -393,6 +394,72 @@ async def back_to_mentoring(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logger.error(f"Error in back_to_mentoring: {e}")
         await query.answer("⚠️ Ошибка при возврате")
 
+async def show_personal_audit(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    log_action("personal_audit_open", user_id)
+
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+
+        await query.edit_message_text(
+            text=DESCRIPTIONS[lang].get("audit_personal_desc", "Аудит страниц для личных целей"),
+            reply_markup=get_audit_keyboard(lang, "personal"),
+            parse_mode='HTML'
+        )
+    except Exception as e:
+        log_action("personal_audit_error", user_id, {"error": str(e)})
+        logger.error(f"Error in show_personal_audit: {e}")
+
+async def show_company_audit(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    log_action("company_audit_open", user_id)
+
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+
+        await query.edit_message_text(
+            text=DESCRIPTIONS[lang].get("audit_company_desc", "Аудит страниц для компаний"),
+            reply_markup=get_audit_keyboard(lang, "company"),
+            parse_mode='HTML'
+        )
+    except Exception as e:
+        log_action("company_audit_error", user_id, {"error": str(e)})
+        logger.error(f"Error in show_company_audit: {e}")
+
+async def handle_audit_filled(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        query = update.callback_query
+        await query.answer()
+        user = update.effective_user
+        lang = context.user_data.get('lang', 'ru')
+
+        # Отправка уведомления админу
+        user_info = f"@{user.username}" if user.username else f"ID: {user.id}"
+        admin_message = f"🚀 <b>Новая заявка на аудит страниц</b>\n\n👤 Пользователь: <a href='tg://user?id={user.id}'>{user_info}</a>\n🆔 ID: {user.id}\n📅 Время: {datetime.now().strftime('%d.%m.%Y %H:%M')}"
+
+        await context.bot.send_message(
+            chat_id=ADMIN_CHAT_ID,
+            text=admin_message,
+            parse_mode='HTML'
+        )
+
+        # Подтверждение пользователю
+        await query.edit_message_text(
+            text=DESCRIPTIONS[lang]["audit_thanks"],
+            reply_markup=get_audit_thanks_keyboard(lang),
+            parse_mode='HTML'
+        )
+
+        log_action("audit_notification_sent", user.id)
+    except Exception as e:
+        log_action("audit_notification_failed", user.id, {"error": str(e)})
+        await query.answer("⚠️ Ошибка при отправке уведомления")
+        logger.error(f"Audit notification error: {e}")
+
 handlers = [
     # Main menus
     CallbackQueryHandler(show_main_menu, pattern="^main_menu$"),
@@ -410,4 +477,7 @@ handlers = [
     CallbackQueryHandler(show_personal_mentoring, pattern="^mentoring_personal$"),
     CallbackQueryHandler(show_company_mentoring, pattern="^mentoring_company$"),
     CallbackQueryHandler(handle_mentoring_filled, pattern="^mentoring_filled_"),
+    CallbackQueryHandler(show_personal_audit, pattern="^audit_personal$"),
+    CallbackQueryHandler(show_company_audit, pattern="^audit_company$"),
+    CallbackQueryHandler(handle_audit_filled, pattern="^audit_filled_"),
 ]

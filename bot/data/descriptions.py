@@ -67,6 +67,23 @@ DESCRIPTIONS = {
             "✅ <b>Спасибо!</b>\n\n"
             "Ваша заявка на менторинг принята. Мы свяжемся с вами в ближайшее время."
         ),
+
+        "audit_personal_desc": (
+            "🔍 <b>Аудит страниц для личных целей</b>\n\n"
+            "Подробный анализ ваших личных страниц с рекомендациями по улучшению. "
+            "После заполнения формы мы свяжемся с вами для уточнения деталей."
+        ),
+        "audit_company_desc": (
+            "🏢 <b>Аудит страниц для компаний</b>\n\n"
+            "Профессиональный анализ бизнес-страниц. "
+            "После заполнения формы мы свяжемся с вами для обсуждения условий."
+        ),
+        "audit_thanks": (
+            "✅ <b>Спасибо!</b>\n\n"
+            "Ваша заявка на аудит принята. Мы свяжемся с вами в ближайшее время."
+        ),
+
+
     },
 
 
@@ -126,7 +143,7 @@ DESCRIPTIONS = {
             "Price: 10000 rub / 60 min"
         ),
 
-"mentoring_personal_desc": (
+        "mentoring_personal_desc": (
             "👨‍🏫 <b>Personal Mentoring</b>\n\n"
             "Individual sessions with an expert for your personal goals. "
             "After submitting the form, we'll contact you to discuss details."
@@ -139,6 +156,21 @@ DESCRIPTIONS = {
         "mentoring_thanks": (
             "✅ <b>Thank you!</b>\n\n"
             "Your mentoring application has been received. We'll contact you soon."
+        ),
+
+        "audit_personal_desc": (
+            "🔍 <b>Page Audit for Personal</b>\n\n"
+            "Detailed analysis of your personal pages with improvement recommendations. "
+            "After submitting the form, we'll contact you to discuss details."
+        ),
+        "audit_company_desc": (
+            "🏢 <b>Page Audit for Business</b>\n\n"
+            "Professional analysis of business pages. "
+            "After submitting the form, we'll contact you to discuss terms."
+        ),
+        "audit_thanks": (
+            "✅ <b>Thank you!</b>\n\n"
+            "Your audit application has been received. We'll contact you soon."
         ),
     }
 }

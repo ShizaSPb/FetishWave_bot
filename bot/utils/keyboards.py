@@ -73,14 +73,6 @@ def get_back_to_payment_methods_keyboard(webinar_id, lang):
         [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data=f"payment_methods_{webinar_id}")]
     ])
 
-def get_page_audit_menu_keyboard(lang):
-    """Клавиатура меню аудита страниц"""
-    return InlineKeyboardMarkup([
-        [InlineKeyboardButton(LANGUAGES[lang]["for_personal"], callback_data="page_audit_personal")],
-        [InlineKeyboardButton(LANGUAGES[lang]["for_company"], callback_data="page_audit_company")],
-        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="menu_products")]
-    ])
-
 def get_private_channel_menu_keyboard(lang):
     """Клавиатура меню приватного канала"""
     return InlineKeyboardMarkup([
@@ -230,4 +222,26 @@ def get_mentoring_thanks_keyboard(lang: str) -> InlineKeyboardMarkup:
     """Клавиатура после отправки заявки на менторинг"""
     return InlineKeyboardMarkup([
         [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="menu_mentoring")]
+    ])
+
+def get_page_audit_menu_keyboard(lang):
+    """Клавиатура меню аудита страниц"""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(LANGUAGES[lang]["for_personal"], callback_data="audit_personal")],
+        [InlineKeyboardButton(LANGUAGES[lang]["for_company"], callback_data="audit_company")],
+        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="menu_products")]
+    ])
+
+def get_audit_keyboard(lang: str, audit_type: str):
+    """Клавиатура для раздела аудита"""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("📝 Заявка" if lang == "ru" else "📝 Application", url="https://forms.gle/YOUR_AUDIT_FORM_LINK")],
+        [InlineKeyboardButton("✅ Я заполнил(а)" if lang == "ru" else "✅ I have filled", callback_data=f"audit_filled_{audit_type}")],
+        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="menu_page_audit")]
+    ])
+
+def get_audit_thanks_keyboard(lang: str) -> InlineKeyboardMarkup:
+    """Клавиатура после отправки заявки на аудит"""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="menu_page_audit")]
     ])
