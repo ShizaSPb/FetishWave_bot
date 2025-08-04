@@ -38,7 +38,6 @@ LANGUAGES = {
         "products": "📦 Продукты",
         "book_session": "📅 Записаться на сессию",
         "offer_cooperation": "🤝 Предложить сотрудничество",
-        "ask_question": "❓ Задать вопрос",
         "leave_review": "⭐ Оставить отзыв",
         "personal_account": "👤 Личный кабинет",
         "product_selected": "🛍️ Вы выбрали:",
@@ -109,6 +108,10 @@ LANGUAGES = {
         "buy_ads_thanks": "✅ <b>Спасибо!</b>\n\nВаша заявка на покупку рекламы принята. Мы свяжемся с вами в ближайшее время.",
         "buy_ads_form": "📝 Заявка",
         "buy_ads_form_filled": "✅ Я заполнил(а)",
+
+        # === Задать вопрос ===
+        "ask_question": "❓ Задать вопрос",
+        "ask_question_desc": "Напишите ваш вопрос мне напрямую",
     },
 
 
@@ -153,7 +156,6 @@ LANGUAGES = {
         "products": "📦 Products",
         "book_session": "📅 Book a session",
         "offer_cooperation": "🤝 Offer cooperation",
-        "ask_question": "❓ Ask a question",
         "leave_review": "⭐ Leave a review",
         "personal_account": "👤 Personal account",
         "product_selected": "🛍️ You selected:",
@@ -224,5 +226,9 @@ LANGUAGES = {
         "buy_ads_thanks": "✅ <b>Thank you!</b>\n\nYour ad purchase request has been received. We'll contact you soon.",
         "buy_ads_form": "📝 Application",
         "buy_ads_form_filled": "✅ I have filled",
+
+        # === Ask question ===
+        "ask_question": "❓ Ask a question",
+        "ask_question_desc": "Write your question to our bot directly",
     }
 }

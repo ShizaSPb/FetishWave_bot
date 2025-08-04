@@ -259,3 +259,10 @@ def get_buy_ads_thanks_keyboard(lang: str) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([
         [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="main_menu")]
     ])
+
+def get_ask_question_keyboard(lang: str):
+    """Клавиатура для раздела 'Задать вопрос'"""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(LANGUAGES[lang]["ask_question"], url="https://t.me/Fetishwave_bot")],
+        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="main_menu")]
+    ])

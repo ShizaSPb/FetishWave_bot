@@ -17,7 +17,7 @@ from bot.utils.keyboards import (
     get_personal_consultation_keyboard,
     get_company_consultation_keyboard,
     get_consultation_payment_keyboard, get_mentoring_keyboard, get_mentoring_thanks_keyboard, get_audit_thanks_keyboard,
-    get_audit_keyboard, get_buy_ads_thanks_keyboard, get_buy_ads_keyboard
+    get_audit_keyboard, get_buy_ads_thanks_keyboard, get_buy_ads_keyboard, get_ask_question_keyboard
 )
 from bot.utils.logger import log_action
 from config import ADMIN_CHAT_ID
@@ -545,6 +545,24 @@ async def handle_buy_ads_filled(update: Update, context: ContextTypes.DEFAULT_TY
         await query.answer("⚠️ Ошибка при отправке уведомления")
         logger.error(f"Buy ads notification error: {e}")
 
+async def show_ask_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    log_action("ask_question_open", user_id)
+
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+
+        await query.edit_message_text(
+            text=LANGUAGES[lang]["ask_question_desc"],
+            reply_markup=get_ask_question_keyboard(lang),
+            parse_mode='HTML'
+        )
+    except Exception as e:
+        log_action("ask_question_error", user_id, {"error": str(e)})
+        logger.error(f"Error in show_ask_question: {e}")
+
 handlers = [
     # Main menus
     CallbackQueryHandler(show_main_menu, pattern="^main_menu$"),
@@ -567,4 +585,5 @@ handlers = [
     CallbackQueryHandler(handle_audit_filled, pattern="^audit_filled_"),
     CallbackQueryHandler(show_buy_ads, pattern="^menu_buy_ads$"),
     CallbackQueryHandler(handle_buy_ads_filled, pattern="^buy_ads_filled$"),
+    CallbackQueryHandler(show_ask_question, pattern="^menu_ask_question$"),
 ]
