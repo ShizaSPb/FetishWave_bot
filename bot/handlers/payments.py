@@ -1,0 +1,363 @@
+import logging
+from telegram import Update
+from telegram.ext import ContextTypes, CallbackQueryHandler
+
+from bot.data.webinar_descriptions import WEBINAR_DESCRIPTIONS
+from bot.utils.languages import LANGUAGES
+from bot.data.descriptions import DESCRIPTIONS
+from bot.utils.keyboards import (
+    get_payment_methods_keyboard,
+    get_back_to_payment_methods_keyboard,
+    get_hypno_payment_keyboard,
+    get_back_to_hypno_payment_keyboard,
+    get_femdom_payment_keyboard,
+    get_back_to_femdom_payment_keyboard
+)
+from bot.utils.logger import log_action
+
+logger = logging.getLogger(__name__)
+
+
+# Common payment handlers
+async def show_payment_methods(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    log_action("payment_methods_open", user_id)
+
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+        webinar_id = query.data.replace("payment_methods_", "")
+
+        context.user_data['current_webinar'] = webinar_id
+
+        await query.edit_message_text(
+            text=LANGUAGES[lang]["choose_payment"],
+            reply_markup=get_payment_methods_keyboard(lang, webinar_id),
+            parse_mode='HTML'
+        )
+        log_action("payment_methods_shown", user_id, {"webinar_id": webinar_id})
+    except Exception as e:
+        log_action("payment_methods_error", user_id, {
+            "webinar_id": webinar_id,
+            "error": str(e)
+        })
+        logger.error(f"Error in show_payment_methods: {e}", exc_info=True)
+        raise
+
+
+async def show_rub_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    log_action("rub_payment_open", user_id)
+
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+        webinar_id = query.data.replace("pay_rub_", "")
+
+        context.user_data['current_webinar'] = webinar_id
+
+        await query.edit_message_text(
+            text=DESCRIPTIONS[lang]["payment_rub_details"],
+            reply_markup=get_back_to_payment_methods_keyboard(webinar_id, lang),
+            parse_mode='HTML'
+        )
+        log_action("rub_payment_shown", user_id, {"webinar_id": webinar_id})
+    except Exception as e:
+        log_action("rub_payment_error", user_id, {
+            "webinar_id": webinar_id,
+            "error": str(e)
+        })
+        logger.error(f"Error in show_rub_payment: {e}", exc_info=True)
+        raise
+
+
+async def show_crypto_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    log_action("crypto_payment_open", user_id)
+
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+        webinar_id = query.data.replace("pay_crypto_", "")
+
+        context.user_data['current_webinar'] = webinar_id
+
+        await query.edit_message_text(
+            text=DESCRIPTIONS[lang]["payment_crypto_details"],
+            reply_markup=get_back_to_payment_methods_keyboard(webinar_id, lang),
+            parse_mode='HTML'
+        )
+        log_action("crypto_payment_shown", user_id, {"webinar_id": webinar_id})
+    except Exception as e:
+        log_action("crypto_payment_error", user_id, {
+            "webinar_id": webinar_id,
+            "error": str(e)
+        })
+        logger.error(f"Error in show_crypto_payment: {e}", exc_info=True)
+        raise
+
+
+async def show_eur_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    log_action("eur_payment_open", user_id)
+
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+        webinar_id = query.data.replace("pay_eur_", "")
+
+        context.user_data['current_webinar'] = webinar_id
+
+        await query.edit_message_text(
+            text=DESCRIPTIONS[lang]["payment_eur_details"],
+            reply_markup=get_back_to_payment_methods_keyboard(webinar_id, lang),
+            parse_mode='HTML'
+        )
+        log_action("eur_payment_shown", user_id, {"webinar_id": webinar_id})
+    except Exception as e:
+        log_action("eur_payment_error", user_id, {
+            "webinar_id": webinar_id,
+            "error": str(e)
+        })
+        logger.error(f"Error in show_eur_payment: {e}", exc_info=True)
+        raise
+
+
+# Hypno payment handlers
+async def show_hypno_rub_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    log_action("hypno_rub_payment_open", user_id)
+
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+        _, _, part = query.data.split(":")
+        context.user_data['current_hypno_part'] = part
+
+        payment_text = (
+            f"💰 <b>Оплата {LANGUAGES[lang][f'part_{part}']} в рублях</b>\n\n"
+            f"{DESCRIPTIONS[lang]['payment_rub_details']}"
+        )
+
+        await query.edit_message_text(
+            text=payment_text,
+            reply_markup=get_back_to_hypno_payment_keyboard(lang, part),
+            parse_mode='HTML'
+        )
+        log_action("hypno_rub_payment_shown", user_id, {"part": part})
+    except Exception as e:
+        log_action("hypno_rub_payment_error", user_id, {"error": str(e)})
+        logger.error(f"Error in show_hypno_rub_payment: {e}", exc_info=True)
+        await query.answer("⚠️ Ошибка при загрузке реквизитов")
+
+
+async def show_hypno_crypto_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    log_action("hypno_crypto_payment_open", user_id)
+
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+        _, _, part = query.data.split(":")
+        context.user_data['current_hypno_part'] = part
+
+        payment_text = (
+            f"💰 <b>Оплата {LANGUAGES[lang][f'part_{part}']} криптовалютой</b>\n\n"
+            f"{DESCRIPTIONS[lang]['payment_crypto_details']}"
+        )
+
+        await query.edit_message_text(
+            text=payment_text,
+            reply_markup=get_back_to_hypno_payment_keyboard(lang, part),
+            parse_mode='HTML'
+        )
+    except Exception as e:
+        logger.error(f"Error in show_hypno_crypto_payment: {e}")
+        await query.answer("⚠️ Ошибка при загрузке реквизитов")
+
+
+async def show_hypno_eur_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    log_action("hypno_eur_payment_open", user_id)
+
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+        _, _, part = query.data.split(":")
+        context.user_data['current_hypno_part'] = part
+
+        payment_text = (
+            f"💰 <b>Оплата {LANGUAGES[lang][f'part_{part}']} в евро</b>\n\n"
+            f"{DESCRIPTIONS[lang]['payment_eur_details']}"
+        )
+
+        await query.edit_message_text(
+            text=payment_text,
+            reply_markup=get_back_to_hypno_payment_keyboard(lang, part),
+            parse_mode='HTML'
+        )
+    except Exception as e:
+        logger.error(f"Error in show_hypno_eur_payment: {e}")
+        await query.answer("⚠️ Ошибка при загрузке реквизитов")
+
+
+async def back_to_hypno_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+        part = query.data.replace("hypno_back_to_payment_", "")
+
+        description_key = f"webinar_hypno_part_{part}"
+        description = WEBINAR_DESCRIPTIONS.get(lang, {}).get(
+            description_key,
+            f"Описание части {part} не найдено"
+        )
+
+        message_text = (
+            f"💰 <b>Оплата {LANGUAGES[lang][f'part_{part}']}</b>\n\n"
+            f"{description}\n\n"
+            "Выберите способ оплаты:"
+        )
+
+        await query.edit_message_text(
+            text=message_text,
+            reply_markup=get_hypno_payment_keyboard(lang, part),
+            parse_mode='HTML'
+        )
+    except Exception as e:
+        logger.error(f"Error in back_to_hypno_payment: {e}")
+        await query.answer("⚠️ Ошибка при возврате")
+
+
+# Femdom payment handlers
+async def show_femdom_rub_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    log_action("femdom_rub_payment_open", user_id)
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+        _, _, part = query.data.split(":")
+        context.user_data['current_femdom_part'] = part
+
+        payment_text = (
+            f"💰 <b>Оплата {LANGUAGES[lang][f'part_{part}']} в рублях</b>\n\n"
+            f"{DESCRIPTIONS[lang]['payment_rub_details']}"
+        )
+
+        await query.edit_message_text(
+            text=payment_text,
+            reply_markup=get_back_to_femdom_payment_keyboard(lang, part),
+            parse_mode='HTML'
+        )
+    except Exception as e:
+        log_action("femdom_rub_payment_error", user_id, {"error": str(e)})
+        await query.answer("⚠️ Ошибка при загрузке реквизитов")
+
+
+async def show_femdom_crypto_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    log_action("femdom_crypto_payment_open", user_id)
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+        _, _, part = query.data.split(":")
+        context.user_data['current_femdom_part'] = part
+
+        payment_text = (
+            f"💰 <b>Оплата {LANGUAGES[lang][f'part_{part}']} криптовалютой</b>\n\n"
+            f"{DESCRIPTIONS[lang]['payment_crypto_details']}"
+        )
+
+        await query.edit_message_text(
+            text=payment_text,
+            reply_markup=get_back_to_femdom_payment_keyboard(lang, part),
+            parse_mode='HTML'
+        )
+    except Exception as e:
+        logger.error(f"Error in show_femdom_crypto_payment: {e}")
+        await query.answer("⚠️ Ошибка при загрузке реквизитов")
+
+
+async def show_femdom_eur_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    log_action("femdom_eur_payment_open", user_id)
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+        _, _, part = query.data.split(":")
+        context.user_data['current_femdom_part'] = part
+
+        payment_text = (
+            f"💰 <b>Оплата {LANGUAGES[lang][f'part_{part}']} в евро</b>\n\n"
+            f"{DESCRIPTIONS[lang]['payment_eur_details']}"
+        )
+
+        await query.edit_message_text(
+            text=payment_text,
+            reply_markup=get_back_to_femdom_payment_keyboard(lang, part),
+            parse_mode='HTML'
+        )
+    except Exception as e:
+        logger.error(f"Error in show_femdom_eur_payment: {e}")
+        await query.answer("⚠️ Ошибка при загрузке реквизитов")
+
+
+async def back_to_femdom_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+        part = query.data.replace("femdom_back_to_payment_", "")
+
+        description_key = f"webinar_femdom_part_{part}"
+        description = WEBINAR_DESCRIPTIONS.get(lang, {}).get(
+            description_key,
+            f"Описание части {part} не найдено"
+        )
+
+        message_text = (
+            f"💰 <b>Оплата {LANGUAGES[lang][f'part_{part}']}</b>\n\n"
+            f"{description}\n\n"
+            "Выберите способ оплаты:"
+        )
+
+        await query.edit_message_text(
+            text=message_text,
+            reply_markup=get_femdom_payment_keyboard(lang, part),
+            parse_mode='HTML'
+        )
+    except Exception as e:
+        logger.error(f"Error in back_to_femdom_payment: {e}")
+        await query.answer("⚠️ Ошибка при возврате")
+
+
+handlers = [
+    # Common payments
+    CallbackQueryHandler(show_payment_methods, pattern="^payment_methods_"),
+    CallbackQueryHandler(show_rub_payment, pattern="^pay_rub_"),
+    CallbackQueryHandler(show_crypto_payment, pattern="^pay_crypto_"),
+    CallbackQueryHandler(show_eur_payment, pattern="^pay_eur_"),
+
+    # Hypno payments
+    CallbackQueryHandler(show_hypno_rub_payment, pattern="^hypno_pay:rub:"),
+    CallbackQueryHandler(show_hypno_crypto_payment, pattern="^hypno_pay:crypto:"),
+    CallbackQueryHandler(show_hypno_eur_payment, pattern="^hypno_pay:eur:"),
+    CallbackQueryHandler(back_to_hypno_payment, pattern="^hypno_back_to_payment_"),
+
+    # Femdom payments
+    CallbackQueryHandler(show_femdom_rub_payment, pattern="^femdom_pay:rub:"),
+    CallbackQueryHandler(show_femdom_crypto_payment, pattern="^femdom_pay:crypto:"),
+    CallbackQueryHandler(show_femdom_eur_payment, pattern="^femdom_pay:eur:"),
+    CallbackQueryHandler(back_to_femdom_payment, pattern="^femdom_back_to_payment_"),
+]
