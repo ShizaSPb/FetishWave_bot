@@ -1,6 +1,8 @@
 import logging
 from telegram import Update
 from telegram.ext import ContextTypes, CallbackQueryHandler
+
+from bot.handlers.shared import update_menu_message
 from bot.utils.languages import LANGUAGES
 from bot.data.webinar_descriptions import WEBINAR_DESCRIPTIONS
 from bot.data.descriptions import DESCRIPTIONS
@@ -28,15 +30,18 @@ async def show_webinars_menu(update: Update, context: ContextTypes.DEFAULT_TYPE)
         await query.answer()
         lang = context.user_data.get('lang', 'ru')
 
-        await query.edit_message_text(
+        await update_menu_message(
+            update=update,
+            context=context,
             text=LANGUAGES[lang]["webinars_title"],
             reply_markup=get_webinars_menu_keyboard(lang),
+            is_query=True,
             parse_mode='HTML'
         )
         log_action("webinars_menu_shown", user_id)
+
     except Exception as e:
         log_action("webinars_menu_error", user_id, {"error": str(e)})
-        logger.error(f"Error in show_webinars_menu: {e}", exc_info=True)
         raise
 
 

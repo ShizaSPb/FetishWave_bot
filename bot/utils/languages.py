@@ -1,5 +1,11 @@
 LANGUAGES = {
     "ru": {
+        "menu_edit_failed": "⚠️ Не удалось обновить меню",
+        "menu_update_error": "⚠️ Ошибка при обновлении меню",
+
+        "text_input_handling_failed": "⚠️ Ошибка обработки текстового ввода",
+        "menu_refreshed_after_text_input": "Меню обновлено после текстового ввода",
+
         # === Основные команды ===
         "language_name": "🇷🇺 Русский",
         "welcome": "👋 Добро пожаловать!",
@@ -124,6 +130,12 @@ LANGUAGES = {
 
 
     "en": {
+        "menu_edit_failed": "⚠️ Failed to update menu",
+        "menu_update_error": "⚠️ Menu update error",
+
+        "text_input_handling_failed": "⚠️ Text input handling failed",
+        "menu_refreshed_after_text_input": "Menu refreshed after text input",
+
         # === Basic commands ===
         "language_name": "🇬🇧 English",
         "welcome": "👋 Welcome!",

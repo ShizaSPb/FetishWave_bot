@@ -1,5 +1,11 @@
-from telegram import Update
+from typing import Optional
+
+from telegram import Update, InlineKeyboardMarkup
+from telegram.ext import ContextTypes
+
 from bot.utils.keyboards import get_language_keyboard
+from bot.utils.logger import log_action
+
 
 def get_user_language(context):
     return context.user_data.get("lang", "ru")
@@ -29,3 +35,62 @@ async def replace_previous_message(context, chat_id, message_id, new_text, reply
         )
         return new_msg.message_id
     return message_id
+
+
+async def update_menu_message(
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,
+        text: str,
+        reply_markup: InlineKeyboardMarkup,
+        is_query: bool = False,
+        parse_mode: Optional[str] = None
+) -> None:
+    """Универсальная функция для управления меню"""
+    chat_id = update.effective_chat.id
+    user_id = update.effective_user.id
+
+    try:
+        # Удаляем предыдущее меню, если оно есть
+        if 'last_menu_message_id' in context.user_data:
+            try:
+                await context.bot.delete_message(
+                    chat_id=chat_id,
+                    message_id=context.user_data['last_menu_message_id']
+                )
+                log_action("old_menu_deleted", user_id)
+            except Exception as e:
+                log_action("menu_deletion_failed", user_id, {"error": str(e)})
+                # Если не удалось удалить, все равно продолжаем
+
+        # Отправляем новое меню
+        if is_query and hasattr(update, 'callback_query'):
+            try:
+                await update.callback_query.edit_message_text(
+                    text=text,
+                    reply_markup=reply_markup,
+                    parse_mode=parse_mode
+                )
+                context.user_data['last_menu_message_id'] = update.callback_query.message.message_id
+            except Exception as e:
+                # Если не удалось отредактировать, отправляем новое сообщение
+                message = await context.bot.send_message(
+                    chat_id=chat_id,
+                    text=text,
+                    reply_markup=reply_markup,
+                    parse_mode=parse_mode
+                )
+                context.user_data['last_menu_message_id'] = message.message_id
+        else:
+            message = await context.bot.send_message(
+                chat_id=chat_id,
+                text=text,
+                reply_markup=reply_markup,
+                parse_mode=parse_mode
+            )
+            context.user_data['last_menu_message_id'] = message.message_id
+
+        log_action("new_menu_sent", user_id)
+
+    except Exception as e:
+        log_action("menu_update_failed", user_id, {"error": str(e)})
+        raise

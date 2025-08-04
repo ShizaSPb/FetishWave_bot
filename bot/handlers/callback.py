@@ -37,11 +37,17 @@ async def main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         query = update.callback_query
         await query.answer()
+
+        # Убедимся, что у нас есть язык в user_data
+        if 'lang' not in context.user_data:
+            context.user_data['lang'] = 'ru'
+
         await show_main_menu(update, context)
         log_action("main_menu_shown", user_id)
     except Exception as e:
         log_action("main_menu_error", user_id, {"error": str(e)})
-        raise
+        # Вместо raise просто отправляем новое меню
+        await show_main_menu(update, context)
 
 
 handlers = [

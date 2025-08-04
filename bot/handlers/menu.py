@@ -2,6 +2,7 @@ import logging
 from telegram import Update
 from telegram.ext import ContextTypes, CallbackQueryHandler
 from bot.database.notion_db import get_user_data
+from bot.handlers.shared import update_menu_message
 from bot.utils.languages import LANGUAGES
 from bot.data.descriptions import DESCRIPTIONS
 from bot.utils.keyboards import (
@@ -27,51 +28,48 @@ from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
+
 async def show_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if hasattr(context, 'last_processed_message'):
-        del context.last_processed_message
     user_id = update.effective_user.id
-    log_action("main_menu_open", user_id)
+    log_action("main_menu_request", user_id)
 
     try:
         query = update.callback_query
         if query:
             await query.answer()
 
+        # Убедимся, что язык установлен
         lang = context.user_data.get('lang', 'ru')
         is_registered = context.user_data.get('registered') or await check_registration(user_id)
 
         if is_registered:
-            context.user_data['registered'] = True
-            reply_markup = get_main_menu_keyboard(lang)
-            log_action("main_menu_shown", user_id, {"status": "registered"})
-
-            if query:
-                await query.edit_message_text(
-                    text=LANGUAGES[lang]["main_menu"],
-                    reply_markup=reply_markup
-                )
-            else:
-                await update.message.reply_text(
-                    text=LANGUAGES[lang]["main_menu"],
-                    reply_markup=reply_markup
-                )
+            await update_menu_message(
+                update=update,
+                context=context,
+                text=LANGUAGES[lang]["main_menu"],
+                reply_markup=get_main_menu_keyboard(lang),
+                is_query=bool(query)
+            )
+            log_action("main_menu_shown", user_id)
         else:
-            log_action("main_menu_blocked", user_id, {"reason": "unregistered"})
-            if query:
-                await query.edit_message_text(
-                    text=LANGUAGES[lang]["registration_required"],
-                    reply_markup=get_welcome_keyboard(lang)
-                )
-            else:
-                await update.message.reply_text(
-                    text=LANGUAGES[lang]["registration_required"],
-                    reply_markup=get_welcome_keyboard(lang)
-                )
+            await update_menu_message(
+                update=update,
+                context=context,
+                text=LANGUAGES[lang]["registration_required"],
+                reply_markup=get_welcome_keyboard(lang),
+                is_query=bool(query)
+            )
+            log_action("registration_required_shown", user_id)
+
     except Exception as e:
         log_action("menu_error", user_id, {"error": str(e)})
-        logger.error(f"Error in show_main_menu: {e}", exc_info=True)
-        raise
+        # Попробуем отправить меню заново
+        lang = context.user_data.get('lang', 'ru')
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=LANGUAGES[lang]["main_menu"],
+            reply_markup=get_main_menu_keyboard(lang)
+        )
 
 async def check_registration(user_id: int) -> bool:
     try:

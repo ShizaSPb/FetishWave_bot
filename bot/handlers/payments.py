@@ -4,6 +4,7 @@ from telegram import Update
 from telegram.ext import ContextTypes, CallbackQueryHandler
 
 from bot.data.webinar_descriptions import WEBINAR_DESCRIPTIONS
+from bot.handlers.shared import update_menu_message
 from bot.utils.languages import LANGUAGES
 from bot.data.descriptions import DESCRIPTIONS
 from bot.utils.keyboards import (
@@ -33,15 +34,18 @@ async def show_payment_methods(update: Update, context: ContextTypes.DEFAULT_TYP
 
         context.user_data['current_webinar'] = webinar_id
 
-        await query.edit_message_text(
+        await update_menu_message(
+            update=update,
+            context=context,
             text=LANGUAGES[lang]["choose_payment"],
             reply_markup=get_payment_methods_keyboard(lang, webinar_id),
+            is_query=True,
             parse_mode='HTML'
         )
         log_action("payment_methods_shown", user_id, {"webinar_id": webinar_id})
+
     except Exception as e:
         log_action("payment_methods_error", user_id, {"webinar_id": webinar_id, "error": str(e)})
-        logger.error(f"Error in show_payment_methods: {e}", exc_info=True)
         raise
 
 async def show_consultation_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
