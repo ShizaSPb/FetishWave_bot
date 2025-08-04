@@ -83,6 +83,8 @@ DESCRIPTIONS = {
             "Ваша заявка на аудит принята. Мы свяжемся с вами в ближайшее время."
         ),
 
+        "ask_question_description": "❓ <b>Задать вопрос</b>",
+
         "buy_ads_desc": (
             "📢 <b>Покупка рекламы</b>\n\n"
             "Размещение рекламы в наших каналах и проектах. "
@@ -182,6 +184,8 @@ DESCRIPTIONS = {
             "✅ <b>Thank you!</b>\n\n"
             "Your audit application has been received. We'll contact you soon."
         ),
+
+        "ask_question_description": "❓ <b>Ask a question</b>",
 
         "buy_ads_desc": (
             "📢 <b>Buy Ads</b>\n\n"

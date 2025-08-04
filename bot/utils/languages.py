@@ -111,7 +111,7 @@ LANGUAGES = {
 
         # === Задать вопрос ===
         "ask_question": "❓ Задать вопрос",
-        "ask_question_desc": "Напишите ваш вопрос мне напрямую",
+
     },
 
 
@@ -228,7 +228,7 @@ LANGUAGES = {
         "buy_ads_form_filled": "✅ I have filled",
 
         # === Ask question ===
-        "ask_question": "❓ Ask a question",
-        "ask_question_desc": "Write your question to our bot directly",
+        "ask_question": "❓ Ask question",
+
     }
 }
