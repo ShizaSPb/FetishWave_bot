@@ -1,9 +1,10 @@
 from telegram import Update
 from telegram.ext import ContextTypes, CallbackQueryHandler
 from bot.database.notion_db import get_user_data
+from bot.handlers import update_menu_message
 from bot.utils.languages import LANGUAGES
 from bot.handlers.menu import show_main_menu
-from bot.utils.keyboards import get_welcome_keyboard
+from bot.utils.keyboards import get_welcome_keyboard, get_main_menu_keyboard
 from bot.utils.logger import log_action
 
 
@@ -38,7 +39,7 @@ async def main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         query = update.callback_query
         await query.answer()
 
-        # Убедимся, что у нас есть язык в user_data
+        # Убедимся, что язык установлен
         if 'lang' not in context.user_data:
             context.user_data['lang'] = 'ru'
 
@@ -46,8 +47,16 @@ async def main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         log_action("main_menu_shown", user_id)
     except Exception as e:
         log_action("main_menu_error", user_id, {"error": str(e)})
-        # Вместо raise просто отправляем новое меню
-        await show_main_menu(update, context)
+        # Пытаемся показать меню заново
+        lang = context.user_data.get('lang', 'ru')
+        await update_menu_message(
+            update=update,
+            context=context,
+            text=LANGUAGES[lang]["main_menu"],
+            reply_markup=get_main_menu_keyboard(lang),
+            is_query=True,
+            menu_type='main'
+        )
 
 
 handlers = [

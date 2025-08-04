@@ -38,7 +38,6 @@ async def show_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if query:
             await query.answer()
 
-        # Убедимся, что язык установлен
         lang = context.user_data.get('lang', 'ru')
         is_registered = context.user_data.get('registered') or await check_registration(user_id)
 
@@ -48,7 +47,8 @@ async def show_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 context=context,
                 text=LANGUAGES[lang]["main_menu"],
                 reply_markup=get_main_menu_keyboard(lang),
-                is_query=bool(query)
+                is_query=bool(query),
+                menu_type='main'  # Добавлено
             )
             log_action("main_menu_shown", user_id)
         else:
@@ -57,19 +57,13 @@ async def show_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 context=context,
                 text=LANGUAGES[lang]["registration_required"],
                 reply_markup=get_welcome_keyboard(lang),
-                is_query=bool(query)
+                is_query=bool(query),
+                menu_type='main'  # Добавлено
             )
             log_action("registration_required_shown", user_id)
-
     except Exception as e:
         log_action("menu_error", user_id, {"error": str(e)})
-        # Попробуем отправить меню заново
-        lang = context.user_data.get('lang', 'ru')
-        await context.bot.send_message(
-            chat_id=update.effective_chat.id,
-            text=LANGUAGES[lang]["main_menu"],
-            reply_markup=get_main_menu_keyboard(lang)
-        )
+        raise
 
 async def check_registration(user_id: int) -> bool:
     try:
@@ -90,15 +84,18 @@ async def show_products_menu(update: Update, context: ContextTypes.DEFAULT_TYPE)
         await query.answer()
         lang = context.user_data.get('lang', 'ru')
 
-        await query.edit_message_text(
+        await update_menu_message(
+            update=update,
+            context=context,
             text=LANGUAGES[lang]["products"],
             reply_markup=get_products_menu_keyboard(lang),
-            parse_mode='HTML'
+            is_query=True,
+            parse_mode='HTML',
+            menu_type='products'  # Добавлено
         )
         log_action("products_menu_shown", user_id)
     except Exception as e:
         log_action("products_menu_error", user_id, {"error": str(e)})
-        logger.error(f"Error in show_products_menu: {e}", exc_info=True)
         raise
 
 async def show_offer_cooperation_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -130,15 +127,18 @@ async def show_consultations_menu(update: Update, context: ContextTypes.DEFAULT_
         await query.answer()
         lang = context.user_data.get('lang', 'ru')
 
-        await query.edit_message_text(
+        await update_menu_message(
+            update=update,
+            context=context,
             text=DESCRIPTIONS[lang]["consultations"],
             reply_markup=get_consultations_menu_keyboard(lang),
-            parse_mode='HTML'
+            is_query=True,
+            parse_mode='HTML',
+            menu_type='consultations'  # Добавлено
         )
         log_action("consultations_menu_shown", user_id)
     except Exception as e:
         log_action("consultations_menu_error", user_id, {"error": str(e)})
-        logger.error(f"Error in show_consultations_menu: {e}", exc_info=True)
         raise
 
 async def show_mentoring_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -150,15 +150,18 @@ async def show_mentoring_menu(update: Update, context: ContextTypes.DEFAULT_TYPE
         await query.answer()
         lang = context.user_data.get('lang', 'ru')
 
-        await query.edit_message_text(
+        await update_menu_message(
+            update=update,
+            context=context,
             text=DESCRIPTIONS[lang]["mentoring"],
             reply_markup=get_mentoring_menu_keyboard(lang),
-            parse_mode='HTML'
+            is_query=True,
+            parse_mode='HTML',
+            menu_type='mentoring'  # Добавлено
         )
         log_action("mentoring_menu_shown", user_id)
     except Exception as e:
         log_action("mentoring_menu_error", user_id, {"error": str(e)})
-        logger.error(f"Error in show_mentoring_menu: {e}", exc_info=True)
         raise
 
 async def show_page_audit_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -170,15 +173,18 @@ async def show_page_audit_menu(update: Update, context: ContextTypes.DEFAULT_TYP
         await query.answer()
         lang = context.user_data.get('lang', 'ru')
 
-        await query.edit_message_text(
+        await update_menu_message(
+            update=update,
+            context=context,
             text=DESCRIPTIONS[lang]["page_audit"],
             reply_markup=get_page_audit_menu_keyboard(lang),
-            parse_mode='HTML'
+            is_query=True,
+            parse_mode='HTML',
+            menu_type='page_audit'  # Добавлено
         )
         log_action("page_audit_menu_shown", user_id)
     except Exception as e:
         log_action("page_audit_menu_error", user_id, {"error": str(e)})
-        logger.error(f"Error in show_page_audit_menu: {e}", exc_info=True)
         raise
 
 async def show_private_channel_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -190,15 +196,18 @@ async def show_private_channel_menu(update: Update, context: ContextTypes.DEFAUL
         await query.answer()
         lang = context.user_data.get('lang', 'ru')
 
-        await query.edit_message_text(
+        await update_menu_message(
+            update=update,
+            context=context,
             text=DESCRIPTIONS[lang]["private_channel"],
             reply_markup=get_private_channel_menu_keyboard(lang),
-            parse_mode='HTML'
+            is_query=True,
+            parse_mode='HTML',
+            menu_type='private_channel'  # Добавлено
         )
         log_action("private_channel_menu_shown", user_id)
     except Exception as e:
         log_action("private_channel_menu_error", user_id, {"error": str(e)})
-        logger.error(f"Error in show_private_channel_menu: {e}", exc_info=True)
         raise
 
 async def handle_cooperation_filled(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -554,14 +563,19 @@ async def show_session_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.answer()
         lang = context.user_data.get('lang', 'ru')
 
-        await query.edit_message_text(
+        await update_menu_message(
+            update=update,
+            context=context,
             text=LANGUAGES[lang]["book_session"],
             reply_markup=get_session_menu_keyboard(lang),
-            parse_mode='HTML'
+            is_query=True,
+            parse_mode='HTML',
+            menu_type='session'  # Добавлено
         )
+        log_action("session_menu_shown", user_id)
     except Exception as e:
         log_action("session_menu_error", user_id, {"error": str(e)})
-        logger.error(f"Error in show_session_menu: {e}")
+        raise
 
 async def show_offline_session(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id

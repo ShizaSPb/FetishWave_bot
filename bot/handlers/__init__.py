@@ -3,12 +3,11 @@ from .start import handler as start_handler
 from .callback import handlers as callback_handlers
 from .view_data import view_data_handler
 from .registration import register_conversation_handler
-from .menu import handlers as menu_handlers
-from .webinars import handlers as webinars_handlers
+from .menu import handlers as menu_handlers, show_main_menu, show_products_menu, show_consultations_menu, \
+    show_mentoring_menu, show_page_audit_menu, show_session_menu
+from .webinars import handlers as webinars_handlers, show_webinars_menu
 from .payments import handlers as payments_handlers
-from bot.utils.keyboards import get_main_menu_keyboard
 from bot.utils.logger import log_action
-from bot.utils.languages import LANGUAGES
 from telegram import Update
 from telegram.ext import ContextTypes, MessageHandler, filters
 
@@ -24,30 +23,38 @@ async def block_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.delete()
 
             current_menu_id = context.user_data.get('last_menu_message_id')
+            last_menu_type = context.user_data.get('last_menu_type', 'main')  # Добавляем отслеживание типа меню
 
             if current_menu_id:
                 try:
-                    await context.bot.edit_message_text(
-                        chat_id=update.effective_chat.id,
-                        message_id=current_menu_id,
-                        text=LANGUAGES[lang]["main_menu"],
-                        reply_markup=get_main_menu_keyboard(lang)
-                    )
-                    log_action("menu_refreshed", user_id)
+                    # Получаем текущее меню из контекста
+                    menu_handler = {
+                        'main': show_main_menu,
+                        'products': show_products_menu,
+                        'consultations': show_consultations_menu,
+                        'mentoring': show_mentoring_menu,
+                        'page_audit': show_page_audit_menu,
+                        'webinars': show_webinars_menu,
+                        'session': show_session_menu,
+                        # Добавьте другие типы меню по необходимости
+                    }.get(last_menu_type, show_main_menu)
+
+                    await menu_handler(update, context)
+                    log_action("menu_refreshed", user_id, {"menu_type": last_menu_type})
                     return
-                except Exception:
+                except Exception as e:
+                    log_action("menu_restore_failed", user_id, {
+                        "error": str(e),
+                        "menu_type": last_menu_type
+                    })
                     pass
 
-            await update_menu_message(
-                update=update,
-                context=context,
-                text=LANGUAGES[lang]["main_menu"],
-                reply_markup=get_main_menu_keyboard(lang),
-                is_query=False
-            )
+            # Если не удалось восстановить меню, показываем главное
+            await show_main_menu(update, context)
 
         except Exception as e:
             log_action("text_input_handling_failed", user_id, {"error": str(e)})
+            await show_main_menu(update, context)
 
 
 def get_handlers():

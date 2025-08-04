@@ -43,11 +43,15 @@ async def update_menu_message(
         text: str,
         reply_markup: InlineKeyboardMarkup,
         is_query: bool = False,
-        parse_mode: Optional[str] = None
+        parse_mode: Optional[str] = None,
+        menu_type: str = 'main'
 ) -> None:
     """Универсальная функция для управления меню"""
     chat_id = update.effective_chat.id
     user_id = update.effective_user.id
+
+    # Сохраняем тип текущего меню
+    context.user_data['last_menu_type'] = menu_type
 
     try:
         # Удаляем предыдущее меню, если оно есть
@@ -60,7 +64,6 @@ async def update_menu_message(
                 log_action("old_menu_deleted", user_id)
             except Exception as e:
                 log_action("menu_deletion_failed", user_id, {"error": str(e)})
-                # Если не удалось удалить, все равно продолжаем
 
         # Отправляем новое меню
         if is_query and hasattr(update, 'callback_query'):
@@ -89,8 +92,8 @@ async def update_menu_message(
             )
             context.user_data['last_menu_message_id'] = message.message_id
 
-        log_action("new_menu_sent", user_id)
+        log_action("new_menu_sent", user_id, {"menu_type": menu_type})
 
     except Exception as e:
-        log_action("menu_update_failed", user_id, {"error": str(e)})
+        log_action("menu_update_failed", user_id, {"error": str(e), "menu_type": menu_type})
         raise

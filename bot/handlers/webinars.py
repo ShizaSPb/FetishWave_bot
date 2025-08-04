@@ -36,7 +36,8 @@ async def show_webinars_menu(update: Update, context: ContextTypes.DEFAULT_TYPE)
             text=LANGUAGES[lang]["webinars_title"],
             reply_markup=get_webinars_menu_keyboard(lang),
             is_query=True,
-            parse_mode='HTML'
+            parse_mode='HTML',
+            menu_type='webinars'  # Добавлено
         )
         log_action("webinars_menu_shown", user_id)
 
@@ -62,10 +63,14 @@ async def show_webinar_details(update: Update, context: ContextTypes.DEFAULT_TYP
             LANGUAGES[lang].get("default_description", "")
         )
 
-        await query.edit_message_text(
+        await update_menu_message(
+            update=update,
+            context=context,
             text=description,
             reply_markup=get_webinar_details_keyboard(lang, full_webinar_id),
-            parse_mode='HTML'
+            is_query=True,
+            parse_mode='HTML',
+            menu_type='webinars'  # Добавлено
         )
         log_action("webinar_details_shown", user_id, {"webinar_id": webinar_id})
     except Exception as e:
@@ -80,7 +85,6 @@ async def show_webinar_details(update: Update, context: ContextTypes.DEFAULT_TYP
         )
 
 
-# Hypno webinar handlers
 async def show_hypno_webinar(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         user_id = update.effective_user.id
@@ -90,10 +94,14 @@ async def show_hypno_webinar(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
         webinar_text = WEBINAR_DESCRIPTIONS.get(lang, {}).get("webinar_hypno")
 
-        await query.edit_message_text(
+        await update_menu_message(
+            update=update,
+            context=context,
             text=webinar_text,
             reply_markup=get_hypno_webinar_keyboard(lang),
-            parse_mode='HTML'
+            is_query=True,
+            parse_mode='HTML',
+            menu_type='webinars'  # Добавлено
         )
         log_action("hypno_webinar_shown", user_id)
     except Exception as e:
@@ -148,10 +156,14 @@ async def show_femdom_webinar(update: Update, context: ContextTypes.DEFAULT_TYPE
 
         webinar_text = WEBINAR_DESCRIPTIONS.get(lang, {}).get("webinar_femdom")
 
-        await query.edit_message_text(
+        await update_menu_message(
+            update=update,
+            context=context,
             text=webinar_text,
             reply_markup=get_femdom_webinar_keyboard(lang),
-            parse_mode='HTML'
+            is_query=True,
+            parse_mode='HTML',
+            menu_type='webinars'  # Добавлено
         )
         log_action("femdom_webinar_shown", user_id)
     except Exception as e:
