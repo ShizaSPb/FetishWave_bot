@@ -17,7 +17,9 @@ from bot.utils.keyboards import (
     get_personal_consultation_keyboard,
     get_company_consultation_keyboard,
     get_consultation_payment_keyboard, get_mentoring_keyboard, get_mentoring_thanks_keyboard, get_audit_thanks_keyboard,
-    get_audit_keyboard, get_buy_ads_thanks_keyboard, get_buy_ads_keyboard
+    get_audit_keyboard, get_buy_ads_thanks_keyboard, get_buy_ads_keyboard, get_offline_session_thanks_keyboard,
+    get_session_menu_keyboard, get_offline_session_keyboard, get_online_session_keyboard,
+    get_online_session_payment_keyboard
 )
 from bot.utils.logger import log_action
 from config import ADMIN_CHAT_ID
@@ -545,7 +547,113 @@ async def handle_buy_ads_filled(update: Update, context: ContextTypes.DEFAULT_TY
         await query.answer("⚠️ Ошибка при отправке уведомления")
         logger.error(f"Buy ads notification error: {e}")
 
+async def show_session_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    log_action("session_menu_open", user_id)
 
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+
+        await query.edit_message_text(
+            text=LANGUAGES[lang]["book_session"],
+            reply_markup=get_session_menu_keyboard(lang),
+            parse_mode='HTML'
+        )
+    except Exception as e:
+        log_action("session_menu_error", user_id, {"error": str(e)})
+        logger.error(f"Error in show_session_menu: {e}")
+
+async def show_offline_session(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    log_action("offline_session_open", user_id)
+
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+
+        await query.edit_message_text(
+            text=DESCRIPTIONS[lang]["offline_session_desc"],
+            reply_markup=get_offline_session_keyboard(lang),
+            parse_mode='HTML'
+        )
+    except Exception as e:
+        log_action("offline_session_error", user_id, {"error": str(e)})
+        logger.error(f"Error in show_offline_session: {e}")
+
+async def handle_offline_session_filled(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        query = update.callback_query
+        await query.answer()
+        user = update.effective_user
+        lang = context.user_data.get('lang', 'ru')
+
+        # Отправка уведомления админу
+        user_info = f"@{user.username}" if user.username else f"ID: {user.id}"
+        admin_message = (
+            f"🚀 <b>Новая заявка на оффлайн сессию</b>\n\n"
+            f"👤 Пользователь: <a href='tg://user?id={user.id}'>{user_info}</a>\n"
+            f"🆔 ID: {user.id}\n"
+            f"📅 Время: {datetime.now().strftime('%d.%m.%Y %H:%M')}"
+        )
+
+        await context.bot.send_message(
+            chat_id=ADMIN_CHAT_ID,
+            text=admin_message,
+            parse_mode='HTML'
+        )
+
+        # Подтверждение пользователю
+        await query.edit_message_text(
+            text=DESCRIPTIONS[lang]["offline_session_thanks"],
+            reply_markup=get_offline_session_thanks_keyboard(lang),
+            parse_mode='HTML'
+        )
+
+        log_action("offline_session_notification_sent", user.id)
+    except Exception as e:
+        log_action("offline_session_notification_failed", user.id, {"error": str(e)})
+        await query.answer("⚠️ Ошибка при отправке уведомления")
+        logger.error(f"Offline session notification error: {e}")
+
+async def show_online_session(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    log_action("online_session_open", user_id)
+
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+
+        await query.edit_message_text(
+            text=DESCRIPTIONS[lang]["online_session_desc"],
+            reply_markup=get_online_session_keyboard(lang),
+            parse_mode='HTML'
+        )
+    except Exception as e:
+        log_action("online_session_error", user_id, {"error": str(e)})
+        logger.error(f"Error in show_online_session: {e}")
+
+
+async def show_online_session_payment_options(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    log_action("online_payment_options_open", user_id)
+
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+
+        await query.edit_message_text(
+            text=LANGUAGES[lang]["choose_payment"],
+            reply_markup=get_online_session_payment_keyboard(lang),
+            parse_mode='HTML'
+        )
+    except Exception as e:
+        log_action("online_payment_options_error", user_id, {"error": str(e)})
+        logger.error(f"Error in show_online_session_payment_options: {e}")
 
 handlers = [
     # Main menus
@@ -569,4 +677,9 @@ handlers = [
     CallbackQueryHandler(handle_audit_filled, pattern="^audit_filled_"),
     CallbackQueryHandler(show_buy_ads, pattern="^menu_buy_ads$"),
     CallbackQueryHandler(handle_buy_ads_filled, pattern="^buy_ads_filled$"),
+    CallbackQueryHandler(show_session_menu, pattern="^menu_book_session$"),
+    CallbackQueryHandler(show_offline_session, pattern="^offline_session$"),
+    CallbackQueryHandler(show_online_session, pattern="^online_session$"),
+    CallbackQueryHandler(show_online_session_payment_options, pattern="^online_session_payment$"),
+    CallbackQueryHandler(handle_offline_session_filled, pattern="^offline_session_filled$"),
 ]

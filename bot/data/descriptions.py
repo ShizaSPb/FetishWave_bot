@@ -95,6 +95,24 @@ DESCRIPTIONS = {
             "Ваша заявка на покупку рекламы принята. Мы свяжемся с вами в ближайшее время."
         ),
 
+        # === Записаться на сессию ===
+        "offline_session_desc": (
+            "🏢 <b>Оффлайн сессия</b>\n\n"
+            "Личная встреча для глубокой работы. "
+            "После заполнения формы мы свяжемся с вами для уточнения деталей."
+        ),
+        "online_session_desc": (
+            "💻 <b>Онлайн сессия</b>\n\n"
+            "Выберите способ оплаты:"
+        ),
+        "offline_session_thanks": (
+            "✅ <b>Спасибо!</b>\n\n"
+            "Ваша заявка на оффлайн сессию принята. Мы свяжемся с вами для уточнения деталей."
+        ),
+        "online_session_thanks": (
+            "✅ <b>Спасибо!</b>\n\n"
+            "Ваша оплата онлайн сессии принята. Мы свяжемся с вами для уточнения деталей."
+        ),
 
     },
 
@@ -195,6 +213,25 @@ DESCRIPTIONS = {
         "buy_ads_thanks": (
             "✅ <b>Thank you!</b>\n\n"
             "Your ad purchase request has been received. We'll contact you soon."
+        ),
+
+        # === Book a session ===
+        "offline_session_desc": (
+            "🏢 <b>Offline Session</b>\n\n"
+            "In-person meeting for deep work. "
+            "After submitting the form, we'll contact you to discuss details."
+        ),
+        "online_session_desc": (
+            "💻 <b>Online Session</b>\n\n"
+            "Choose payment method:"
+        ),
+        "offline_session_thanks": (
+            "✅ <b>Thank you!</b>\n\n"
+            "Your offline session request has been received. We'll contact you soon."
+        ),
+        "online_session_thanks": (
+            "✅ <b>Thank you!</b>\n\n"
+            "Your online session payment has been received. We'll contact you soon."
         )
     }
 }

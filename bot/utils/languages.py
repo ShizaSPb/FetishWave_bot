@@ -112,6 +112,12 @@ LANGUAGES = {
         # === Задать вопрос ===
         "ask_question": "❓ Задать вопрос",
 
+        # === Сессия ===
+        "offline_session": "🏢 Оффлайн сессия",
+        "online_session": "💻 Онлайн сессия",
+        "session_form": "📝 Заявка",
+        "session_form_filled": "✅ Я заполнил(а)",
+        "pay_tribute": "💰 Внести дань",
     },
 
 
@@ -230,5 +236,11 @@ LANGUAGES = {
         # === Ask question ===
         "ask_question": "❓ Ask question",
 
+        # === Session ===
+        "offline_session": "🏢 Offline Session",
+        "online_session": "💻 Online Session",
+        "session_form": "📝 Application",
+        "session_form_filled": "✅ I have filled",
+        "pay_tribute": "💰 Pay Tribute"
     }
 }

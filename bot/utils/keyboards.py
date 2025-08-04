@@ -148,7 +148,7 @@ def get_cooperation_keyboard(lang):
 def get_back_to_menu_keyboard(lang):
     """Универсальная клавиатура с кнопкой 'Назад в меню'"""
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="main_menu")]
+        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="online_session")]
     ])
 
 def get_consultations_menu_keyboard(lang: str):
@@ -265,4 +265,48 @@ def get_ask_question_keyboard(lang: str):
     return InlineKeyboardMarkup([
         [InlineKeyboardButton(LANGUAGES[lang]["ask_question"], url="https://t.me/Fetishwave_bot")],
         [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="main_menu")]
+    ])
+
+def get_session_menu_keyboard(lang):
+    """Клавиатура меню сессий"""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(LANGUAGES[lang]["offline_session"], callback_data="offline_session")],
+        [InlineKeyboardButton(LANGUAGES[lang]["online_session"], callback_data="online_session")],
+        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="main_menu")]
+    ])
+
+def get_offline_session_keyboard(lang):
+    """Клавиатура для офлайн сессии"""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(LANGUAGES[lang]["session_form"], url="https://forms.gle/YOUR_SESSION_FORM_LINK")],
+        [InlineKeyboardButton(LANGUAGES[lang]["session_form_filled"], callback_data="offline_session_filled")],
+        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="menu_book_session")]
+    ])
+
+def get_online_session_payment_keyboard(lang):
+    """Клавиатура выбора валюты для онлайн сессии"""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(LANGUAGES[lang]["payment_rub"], callback_data="online_session_payment:rub")],
+        [InlineKeyboardButton(LANGUAGES[lang]["payment_crypto"], callback_data="online_session_payment:crypto")],
+        [InlineKeyboardButton(LANGUAGES[lang]["payment_eur"], callback_data="online_session_payment:eur")],
+        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="online_session")]
+    ])
+
+def get_offline_session_thanks_keyboard(lang):
+    """Клавиатура после отправки заявки на офлайн сессию"""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="menu_book_session")]
+    ])
+
+def get_online_session_keyboard(lang):
+    """Клавиатура для онлайн сессии"""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(LANGUAGES[lang]["pay_tribute"], callback_data="online_session_payment")],
+        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="menu_book_session")]
+    ])
+
+def get_back_to_currency_selection_keyboard(lang):
+    """Клавиатура для возврата к выбору валюты"""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="online_session_payment")]
     ])

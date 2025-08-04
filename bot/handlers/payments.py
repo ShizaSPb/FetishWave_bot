@@ -1,4 +1,5 @@
 import logging
+
 from telegram import Update
 from telegram.ext import ContextTypes, CallbackQueryHandler
 
@@ -13,7 +14,7 @@ from bot.utils.keyboards import (
     get_femdom_payment_keyboard,
     get_back_to_femdom_payment_keyboard,
     get_back_to_consultation_payment_keyboard,
-    get_consultation_payment_keyboard
+    get_online_session_payment_keyboard, get_back_to_menu_keyboard, get_back_to_currency_selection_keyboard
 )
 from bot.utils.logger import log_action
 
@@ -343,6 +344,64 @@ async def back_to_femdom_payment(update: Update, context: ContextTypes.DEFAULT_T
         logger.error(f"Error in back_to_femdom_payment: {e}")
         await query.answer("⚠️ Ошибка при возврате")
 
+async def show_online_session_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    log_action("online_session_payment_open", user_id)
+
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+
+        await query.edit_message_text(
+            text=LANGUAGES[lang]["choose_payment"],
+            reply_markup=get_online_session_payment_keyboard(lang),
+            parse_mode='HTML'
+        )
+    except Exception as e:
+        log_action("online_session_payment_error", user_id, {"error": str(e)})
+        logger.error(f"Error in show_online_session_payment: {e}")
+
+
+async def handle_online_session_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+        currency = query.data.split(":")[1]  # rub/crypto/eur
+
+        payment_details = {
+            "rub": DESCRIPTIONS[lang]["payment_rub_details"],
+            "crypto": DESCRIPTIONS[lang]["payment_crypto_details"],
+            "eur": DESCRIPTIONS[lang]["payment_eur_details"]
+        }[currency]
+
+        await query.edit_message_text(
+            text=f"💳 <b>{LANGUAGES[lang]['online_session']}</b>\n\n{payment_details}",
+            reply_markup=get_back_to_currency_selection_keyboard(lang),  # Используем новую клавиатуру
+            parse_mode='HTML'
+        )
+
+    except Exception as e:
+        logger.error(f"Error in handle_online_session_payment: {e}")
+        await query.answer("⚠️ Ошибка при загрузке реквизитов")
+
+
+async def back_to_currency_selection(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+
+        await query.edit_message_text(
+            text=LANGUAGES[lang]["choose_payment"],
+            reply_markup=get_online_session_payment_keyboard(lang),
+            parse_mode='HTML'
+        )
+    except Exception as e:
+        logger.error(f"Error in back_to_currency_selection: {e}")
+        await query.answer("⚠️ Ошибка при возврате")
+
 handlers = [
     # Common payments
     CallbackQueryHandler(show_payment_methods, pattern="^payment_methods_"),
@@ -362,4 +421,10 @@ handlers = [
     CallbackQueryHandler(show_femdom_crypto_payment, pattern="^femdom_pay:crypto:"),
     CallbackQueryHandler(show_femdom_eur_payment, pattern="^femdom_pay:eur:"),
     CallbackQueryHandler(back_to_femdom_payment, pattern="^femdom_back_to_payment_"),
+
+    # Session payments
+    CallbackQueryHandler(handle_online_session_payment, pattern="^online_session_payment:rub$"),
+    CallbackQueryHandler(handle_online_session_payment, pattern="^online_session_payment:crypto$"),
+    CallbackQueryHandler(handle_online_session_payment, pattern="^online_session_payment:eur$"),
+    CallbackQueryHandler(back_to_currency_selection, pattern="^online_session_payment$"),
 ]
