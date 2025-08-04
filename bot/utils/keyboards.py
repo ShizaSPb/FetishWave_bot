@@ -73,14 +73,6 @@ def get_back_to_payment_methods_keyboard(webinar_id, lang):
         [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data=f"payment_methods_{webinar_id}")]
     ])
 
-def get_mentoring_menu_keyboard(lang):
-    """Клавиатура меню менторинга"""
-    return InlineKeyboardMarkup([
-        [InlineKeyboardButton(LANGUAGES[lang]["for_personal"], callback_data="mentoring_personal")],
-        [InlineKeyboardButton(LANGUAGES[lang]["for_company"], callback_data="mentoring_company")],
-        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="menu_products")]
-    ])
-
 def get_page_audit_menu_keyboard(lang):
     """Клавиатура меню аудита страниц"""
     return InlineKeyboardMarkup([
@@ -216,4 +208,26 @@ def get_back_to_consultation_payment_keyboard(lang: str, consultation_type: str)
             LANGUAGES[lang]["back"],
             callback_data=f"consultation_type:{consultation_type}"
         )]
+    ])
+
+def get_mentoring_menu_keyboard(lang):
+    """Клавиатура меню менторинга"""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(LANGUAGES[lang]["mentoring_personal"], callback_data="mentoring_personal")],
+        [InlineKeyboardButton(LANGUAGES[lang]["mentoring_company"], callback_data="mentoring_company")],
+        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="menu_products")]
+    ])
+
+def get_mentoring_keyboard(lang: str, mentoring_type: str):
+    """Клавиатура для раздела менторинга"""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("📝 Заявка" if lang == "ru" else "📝 Application", url="https://forms.gle/YOUR_MENTORING_FORM_LINK")],
+        [InlineKeyboardButton("✅ Я заполнил(а)" if lang == "ru" else "✅ I have filled", callback_data=f"mentoring_filled_{mentoring_type}")],
+        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="menu_mentoring")]
+    ])
+
+def get_mentoring_thanks_keyboard(lang: str) -> InlineKeyboardMarkup:
+    """Клавиатура после отправки заявки на менторинг"""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="menu_mentoring")]
     ])

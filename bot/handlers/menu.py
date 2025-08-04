@@ -16,7 +16,7 @@ from bot.utils.keyboards import (
     get_back_to_menu_keyboard,
     get_personal_consultation_keyboard,
     get_company_consultation_keyboard,
-    get_consultation_payment_keyboard
+    get_consultation_payment_keyboard, get_mentoring_keyboard, get_mentoring_thanks_keyboard
 )
 from bot.utils.logger import log_action
 from config import ADMIN_CHAT_ID
@@ -309,6 +309,90 @@ async def back_to_consultation_type(update: Update, context: ContextTypes.DEFAUL
     except Exception as e:
         logger.error(f"Error in back_to_consultation_type: {e}")
 
+
+async def show_personal_mentoring(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    log_action("personal_mentoring_open", user_id)
+
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+
+        await query.edit_message_text(
+            text=DESCRIPTIONS[lang].get("mentoring_personal_desc", "Менторинг для личных целей"),
+            reply_markup=get_mentoring_keyboard(lang, "personal"),
+            parse_mode='HTML'
+        )
+    except Exception as e:
+        log_action("personal_mentoring_error", user_id, {"error": str(e)})
+        logger.error(f"Error in show_personal_mentoring: {e}")
+
+async def show_company_mentoring(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    log_action("company_mentoring_open", user_id)
+
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+
+        await query.edit_message_text(
+            text=DESCRIPTIONS[lang].get("mentoring_company_desc", "Менторинг для компаний"),
+            reply_markup=get_mentoring_keyboard(lang, "company"),
+            parse_mode='HTML'
+        )
+    except Exception as e:
+        log_action("company_mentoring_error", user_id, {"error": str(e)})
+        logger.error(f"Error in show_company_mentoring: {e}")
+
+
+async def handle_mentoring_filled(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        query = update.callback_query
+        await query.answer()
+        user = update.effective_user
+        lang = context.user_data.get('lang', 'ru')
+
+        # Отправка уведомления админу (прежний код)
+        user_info = f"@{user.username}" if user.username else f"ID: {user.id}"
+        admin_message = f"🚀 <b>Новая заявка на менторинг</b>\n\n👤 Пользователь: <a href='tg://user?id={user.id}'>{user_info}</a>\n🆔 ID: {user.id}\n📅 Время: {datetime.now().strftime('%d.%m.%Y %H:%M')}"
+
+        await context.bot.send_message(
+            chat_id=ADMIN_CHAT_ID,
+            text=admin_message,
+            parse_mode='HTML'
+        )
+
+        # Подтверждение пользователю с возвратом к меню менторинга
+        await query.edit_message_text(
+            text=DESCRIPTIONS[lang]["mentoring_thanks"],
+            reply_markup=get_mentoring_thanks_keyboard(lang),
+            parse_mode='HTML'
+        )
+
+        log_action("mentoring_notification_sent", user.id)
+    except Exception as e:
+        log_action("mentoring_notification_failed", user.id, {"error": str(e)})
+        await query.answer("⚠️ Ошибка при отправке уведомления")
+        logger.error(f"Mentoring notification error: {e}")
+
+
+async def back_to_mentoring(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+        mentoring_type = context.user_data.get('last_mentoring_type', 'personal')
+
+        if mentoring_type == 'personal':
+            await show_personal_mentoring(update, context)
+        else:
+            await show_company_mentoring(update, context)
+    except Exception as e:
+        logger.error(f"Error in back_to_mentoring: {e}")
+        await query.answer("⚠️ Ошибка при возврате")
+
 handlers = [
     # Main menus
     CallbackQueryHandler(show_main_menu, pattern="^main_menu$"),
@@ -323,4 +407,7 @@ handlers = [
     CallbackQueryHandler(show_company_consultation_menu, pattern="^consultation_company$"),
     CallbackQueryHandler(handle_consultation_type_selection, pattern="^consultation_type:"),
     CallbackQueryHandler(back_to_consultation_type, pattern="^consultation_back:"),
+    CallbackQueryHandler(show_personal_mentoring, pattern="^mentoring_personal$"),
+    CallbackQueryHandler(show_company_mentoring, pattern="^mentoring_company$"),
+    CallbackQueryHandler(handle_mentoring_filled, pattern="^mentoring_filled_"),
 ]

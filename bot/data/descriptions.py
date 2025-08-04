@@ -52,7 +52,26 @@ DESCRIPTIONS = {
             "Стратегии управления и решения сложных бизнес-задач. "
             "Стоимость: 10000 руб / 60 мин"
         ),
+
+        "mentoring_personal_desc": (
+            "👨‍🏫 <b>Менторинг для личных целей</b>\n\n"
+            "Индивидуальные сессии с экспертом для решения ваших личных задач. "
+            "После заполнения формы мы свяжемся с вами для уточнения деталей."
+        ),
+        "mentoring_company_desc": (
+            "🏢 <b>Менторинг для компаний</b>\n\n"
+            "Профессиональное сопровождение для бизнеса. "
+            "После заполнения формы мы свяжемся с вами для обсуждения условий."
+        ),
+        "mentoring_thanks": (
+            "✅ <b>Спасибо!</b>\n\n"
+            "Ваша заявка на менторинг принята. Мы свяжемся с вами в ближайшее время."
+        ),
     },
+
+
+
+
     "en": {
         # === Payment descriptions ===
         "payment_rub_details": "💳 <b>Payment in rubles</b>\n\nBank: Tinkoff\nCard: <code>5536...5678</code>\nRecipient: Ivanov I.I.",
@@ -105,6 +124,21 @@ DESCRIPTIONS = {
             "👔 <b>Manager consultation</b>\n\n"
             "Management strategies and complex business solutions. "
             "Price: 10000 rub / 60 min"
+        ),
+
+"mentoring_personal_desc": (
+            "👨‍🏫 <b>Personal Mentoring</b>\n\n"
+            "Individual sessions with an expert for your personal goals. "
+            "After submitting the form, we'll contact you to discuss details."
+        ),
+        "mentoring_company_desc": (
+            "🏢 <b>Business Mentoring</b>\n\n"
+            "Professional guidance for your business. "
+            "After submitting the form, we'll contact you to discuss terms."
+        ),
+        "mentoring_thanks": (
+            "✅ <b>Thank you!</b>\n\n"
+            "Your mentoring application has been received. We'll contact you soon."
         ),
     }
 }

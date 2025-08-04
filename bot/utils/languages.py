@@ -88,7 +88,15 @@ LANGUAGES = {
         "consultation_manager": "👔 Для управленца",
         "back_to_menu": "🔙 В главное меню",
         "back_to_consultations": "🔙 К консультациям",
+
+        # === Менторинг ===
+        "mentoring_personal": "👨‍💻 Личный менторинг",
+        "mentoring_company": "🏢 Бизнес менторинг",
     },
+
+
+
+
     "en": {
         # === Basic commands ===
         "language_name": "🇬🇧 English",
@@ -178,5 +186,9 @@ LANGUAGES = {
         "consultation_manager": "👔 For manager",
         "back_to_menu": "🔙 To main menu",
         "back_to_consultations": "🔙 To consultations",
+
+        # === Mentoring ===
+        "mentoring_personal": "👨‍💻 Personal Mentoring",
+        "mentoring_company": "🏢 Business Mentoring",
     }
 }
