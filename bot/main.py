@@ -3,7 +3,7 @@ from telegram import Update
 from telegram.ext import Application
 from config import BOT_TOKEN
 from bot.handlers import handlers
-from bot.utils.logger import setup_logging, log_action
+from bot.utils.logger import setup_logging
 
 # Инициализация логирования
 setup_logging()

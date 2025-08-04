@@ -2,8 +2,9 @@ import logging
 
 from telegram import Update
 from telegram.ext import ContextTypes, CallbackQueryHandler
-from bot.utils.languages import LANGUAGES
 from bot.database.notion_db import get_user_data
+from bot.utils.languages import LANGUAGES
+from bot.data.descriptions import DESCRIPTIONS
 from bot.data.webinar_descriptions import WEBINAR_DESCRIPTIONS
 from bot.utils.keyboards import (
     get_main_menu_keyboard,
@@ -105,6 +106,25 @@ async def show_products_menu(update: Update, context: ContextTypes.DEFAULT_TYPE)
     except Exception as e:
         log_action("products_menu_error", user_id, {"error": str(e)})
         logger.error(f"Error in show_products_menu: {e}", exc_info=True)
+        raise
+
+async def show_offer_cooperation_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    log_action("offer_cooperation_menu_open", user_id)
+
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+
+        await query.edit_message_text(
+            text=DESCRIPTIONS[lang]["offer_cooperation"],
+            parse_mode='HTML'
+        )
+        log_action("offer_cooperation_menu_shown", user_id)
+    except Exception as e:
+        log_action("offer_cooperation_menu_error", user_id, {"error": str(e)})
+        logger.error(f"Error in show_offer_cooperation_menu: {e}", exc_info=True)
         raise
 
 
@@ -758,4 +778,5 @@ handlers = [
     CallbackQueryHandler(show_mentoring_menu, pattern="^menu_mentoring$"),
     CallbackQueryHandler(show_page_audit_menu, pattern="^menu_page_audit$"),
     CallbackQueryHandler(show_private_channel_menu, pattern="^menu_private_channel$"),
+    CallbackQueryHandler(show_offer_cooperation_menu, pattern="^menu_offer_cooperation$"),
 ]

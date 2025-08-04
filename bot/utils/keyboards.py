@@ -19,9 +19,10 @@ def get_main_menu_keyboard(lang):
     """Клавиатура главного меню"""
     return InlineKeyboardMarkup([
         [InlineKeyboardButton(LANGUAGES[lang]["products"], callback_data="menu_products")],
-        [InlineKeyboardButton(LANGUAGES[lang]["buy_ads"], callback_data="menu_buy_ads")],
-        [InlineKeyboardButton(LANGUAGES[lang]["ask_question"], callback_data="menu_ask_question")],
         [InlineKeyboardButton(LANGUAGES[lang]["book_session"], callback_data="menu_book_session")],
+        [InlineKeyboardButton(LANGUAGES[lang]["buy_ads"], callback_data="menu_buy_ads")],
+        [InlineKeyboardButton(LANGUAGES[lang]["offer_cooperation"], callback_data="menu_offer_cooperation")],
+        [InlineKeyboardButton(LANGUAGES[lang]["ask_question"], callback_data="menu_ask_question")],
         [InlineKeyboardButton(LANGUAGES[lang]["leave_review"], callback_data="menu_leave_review")],
         [InlineKeyboardButton(LANGUAGES[lang]["personal_account"], callback_data="menu_personal_account")]
     ])

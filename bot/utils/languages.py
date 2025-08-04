@@ -36,14 +36,15 @@ LANGUAGES = {
         # === Главное меню ===
         "main_menu": "🏠 Главное меню",
         "products": "📦 Продукты",
-        "buy_ads": "🛒 Купить рекламу",
-        "ask_question": "❓ Задать вопрос",
         "book_session": "📅 Записаться на сессию",
+        "buy_ads": "🛒 Купить рекламу",
+        "offer_cooperation": "🤝 Предложить сотрудничество",
+        "ask_question": "❓ Задать вопрос",
         "leave_review": "⭐ Оставить отзыв",
         "personal_account": "👤 Личный кабинет",
         "product_selected": "🛍️ Вы выбрали:",
 
-        # === Вебинары ===
+        # === Вебинары (только названия) ===
         "webinars": "🎓 Вебинары",
         "consultations": "💬 Консультации",
         "mentoring": "👨‍🏫 Менторинг",
@@ -51,13 +52,6 @@ LANGUAGES = {
         "private_channel": "🔒 Доступ в закрытый канал",
         "for_personal": "👨‍💻 Для себя",
         "for_company": "🏢 Для компании",
-
-        "webinars_description": "🎓 Полезные вебинары по различным тематикам",
-        "consultations_description": "💬 Индивидуальные консультации с экспертами",
-        "mentoring_description": "👨‍🏫 Персональное сопровождение и наставничество",
-        "page_audit_description": "🔍 Анализ и рекомендации по улучшению ваших страниц",
-        "private_channel_description": "🔒 Эксклюзивный контент для подписчиков",
-        "default_description": "Описание вебинара",
 
         "webinars_title": "🎓 <b>Доступные вебинары:</b>\n\nВыберите интересующий вас вебинар:",
         "webinar_femdom": "✨ Фемдом секстинг: красиво, дорого и не раздеваясь ✨",
@@ -72,10 +66,6 @@ LANGUAGES = {
         "payment_rub": "₽ Рубли",
         "payment_crypto": "₿ Crypto (USDT TRC20)",
         "payment_eur": "€ Euro",
-
-        "payment_rub_details": "💳 <b>Оплата в рублях</b>\n\nБанк: Тинькофф\nКарта: <code>5536...5678</code>\nПолучатель: Иванов И.И.",
-        "payment_crypto_details": "₿ <b>Оплата криптовалютой</b>\n\nКошелек: <code>TJm...W1f</code>\nСеть: TRON (TRC20)\nТокен: USDT",
-        "payment_eur_details": "€ <b>Оплата в евро</b>\n\nIBAN: DE89 3704 0044 0532 0130 00\nBIC: COBADEFFXXX",
         "payment_error": "⚠️ Ошибка обработки платежа",
 
         # === Разное ===
@@ -126,14 +116,15 @@ LANGUAGES = {
         # === Main menu ===
         "main_menu": "🏠 Main Menu",
         "products": "📦 Products",
-        "buy_ads": "🛒 Buy ads",
-        "ask_question": "❓ Ask a question",
         "book_session": "📅 Book a session",
+        "buy_ads": "🛒 Buy ads",
+        "offer_cooperation": "🤝 Offer cooperation",
+        "ask_question": "❓ Ask a question",
         "leave_review": "⭐ Leave a review",
         "personal_account": "👤 Personal account",
         "product_selected": "🛍️ You selected:",
 
-        # === Webinars ===
+        # === Webinars (only titles) ===
         "webinars": "🎓 Webinars",
         "consultations": "💬 Consultations",
         "mentoring": "👨‍🏫 Mentoring",
@@ -141,13 +132,6 @@ LANGUAGES = {
         "private_channel": "🔒 Private channel access",
         "for_personal": "👨‍💻 For personal",
         "for_company": "🏢 For company",
-
-        "webinars_description": "🎓 Useful webinars on various topics",
-        "consultations_description": "💬 Individual consultations with experts",
-        "mentoring_description": "👨‍🏫 Personal mentoring and guidance",
-        "page_audit_description": "🔍 Analysis and recommendations for your pages",
-        "private_channel_description": "🔒 Exclusive content for subscribers",
-        "default_description": "Webinar description",
 
         "webinars_title": "🎓 <b>Available webinars:</b>\n\nChoose the webinar you're interested in:",
         "webinar_femdom": "✨ Femdom sexting: beautiful, expensive and without undressing ✨",
@@ -162,10 +146,6 @@ LANGUAGES = {
         "payment_rub": "₽ Rubles",
         "payment_crypto": "₿ Crypto (USDT TRC20)",
         "payment_eur": "€ Euro",
-
-        "payment_rub_details": "💳 <b>Payment in rubles</b>\n\nBank: Tinkoff\nCard: <code>5536...5678</code>\nRecipient: Ivanov I.I.",
-        "payment_crypto_details": "₿ <b>Crypto payment</b>\n\nWallet: <code>TJm...W1f</code>\nNetwork: TRON (TRC20)\nToken: USDT",
-        "payment_eur_details": "€ <b>Payment in euros</b>\n\nIBAN: DE89 3704 0044 0532 0130 00\nBIC: COBADEFFXXX",
         "payment_error": "⚠️ Payment processing error",
 
         # === Miscellaneous ===
