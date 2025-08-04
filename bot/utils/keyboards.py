@@ -166,3 +166,32 @@ def get_back_to_femdom_payment_keyboard(lang, part):
             callback_data=f"femdom_back_to_payment_{part}"
         )]
     ])
+
+def get_cooperation_keyboard(lang):
+    """Клавиатура для раздела сотрудничества"""
+    return InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton(
+                "📝 Заявка" if lang == "ru" else "📝 Application",
+                url="https://forms.gle/YOUR_FORM_LINK"
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                "✅ Я заполнил(а)" if lang == "ru" else "✅ I have filled",
+                callback_data="cooperation_filled"
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                LANGUAGES[lang]["back"],
+                callback_data="main_menu"
+            )
+        ]
+    ])
+
+def get_back_to_menu_keyboard(lang):
+    """Универсальная клавиатура с кнопкой 'Назад в меню'"""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="main_menu")]
+    ])

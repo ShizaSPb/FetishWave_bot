@@ -11,9 +11,11 @@ from bot.utils.keyboards import (
     get_mentoring_menu_keyboard,
     get_page_audit_menu_keyboard,
     get_private_channel_menu_keyboard,
-    get_welcome_keyboard
+    get_welcome_keyboard, get_cooperation_keyboard, get_back_to_menu_keyboard
 )
 from bot.utils.logger import log_action
+from config import ADMIN_CHAT_ID
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -192,6 +194,65 @@ async def show_private_channel_menu(update: Update, context: ContextTypes.DEFAUL
         logger.error(f"Error in show_private_channel_menu: {e}", exc_info=True)
         raise
 
+
+async def show_offer_cooperation_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    log_action("offer_cooperation_menu_open", user_id)
+
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+
+        await query.edit_message_text(
+            text=DESCRIPTIONS[lang]["offer_cooperation"],
+            reply_markup=get_cooperation_keyboard(lang),
+            parse_mode='HTML'
+        )
+        log_action("offer_cooperation_menu_shown", user_id)
+    except Exception as e:
+        log_action("offer_cooperation_menu_error", user_id, {"error": str(e)})
+        logger.error(f"Error in show_offer_cooperation_menu: {e}", exc_info=True)
+        raise
+
+
+async def handle_cooperation_filled(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        query = update.callback_query
+        await query.answer()
+        user = update.effective_user
+        lang = context.user_data.get('lang', 'ru')
+
+        # Формируем сообщение для админа
+        user_info = f"@{user.username}" if user.username else f"ID: {user.id}"
+        admin_message = (
+            f"🚀 <b>Новая заявка на сотрудничество</b>\n\n"
+            f"👤 Пользователь: <a href='tg://user?id={user.id}'>{user_info}</a>\n"
+            f"🆔 ID: {user.id}\n"
+            f"📅 Время: {datetime.now().strftime('%d.%m.%Y %H:%M')}"
+        )
+
+        # Отправляем админу
+        await context.bot.send_message(
+            chat_id=ADMIN_CHAT_ID,
+            text=admin_message,
+            parse_mode='HTML'
+        )
+
+        # Подтверждение пользователю
+        await query.edit_message_text(
+            text=DESCRIPTIONS[lang]["cooperation_thanks"],
+            reply_markup=get_back_to_menu_keyboard(lang),
+            parse_mode='HTML'
+        )
+
+        log_action("cooperation_notification_sent", user.id)
+
+    except Exception as e:
+        log_action("cooperation_notification_failed", user.id, {"error": str(e)})
+        await query.answer("⚠️ Ошибка при отправке уведомления")
+        logger.error(f"Cooperation notification error: {e}")
+
 handlers = [
     # Main menus
     CallbackQueryHandler(show_main_menu, pattern="^main_menu$"),
@@ -201,4 +262,5 @@ handlers = [
     CallbackQueryHandler(show_page_audit_menu, pattern="^menu_page_audit$"),
     CallbackQueryHandler(show_private_channel_menu, pattern="^menu_private_channel$"),
     CallbackQueryHandler(show_offer_cooperation_menu, pattern="^menu_offer_cooperation$"),
+    CallbackQueryHandler(handle_cooperation_filled, pattern="^cooperation_filled$"),
 ]
