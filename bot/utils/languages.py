@@ -77,7 +77,17 @@ LANGUAGES = {
         "back_to_webinar": "🔙 Назад к вебинару",
         "part_1": "Часть 1",
         "part_2": "Часть 2",
-        "part_both": "обе Части"
+        "part_both": "обе Части",
+
+        # === Консультации ===
+        "consultation_personal": "💬 Для себя",
+        "consultation_company": "🏢 Для компании",
+        "consultation_love": "💖 Для личной жизни",
+        "consultation_work": "💼 Для работы",
+        "consultation_employee": "👨‍💼 Для сотрудника",
+        "consultation_manager": "👔 Для управленца",
+        "back_to_menu": "🔙 В главное меню",
+        "back_to_consultations": "🔙 К консультациям",
     },
     "en": {
         # === Basic commands ===
@@ -157,6 +167,16 @@ LANGUAGES = {
         "back_to_webinar": "🔙 Back to webinar",
         "part_1": "Part 1",
         "part_2": "Part 2",
-        "part_both": "both Parts"
+        "part_both": "both Parts",
+
+        # === Consultation ===
+        "consultation_personal": "💬 For personal",
+        "consultation_company": "🏢 For company",
+        "consultation_love": "💖 For love life",
+        "consultation_work": "💼 For work",
+        "consultation_employee": "👨‍💼 For employee",
+        "consultation_manager": "👔 For manager",
+        "back_to_menu": "🔙 To main menu",
+        "back_to_consultations": "🔙 To consultations",
     }
 }

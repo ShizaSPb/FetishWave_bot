@@ -73,14 +73,6 @@ def get_back_to_payment_methods_keyboard(webinar_id, lang):
         [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data=f"payment_methods_{webinar_id}")]
     ])
 
-def get_consultations_menu_keyboard(lang):
-    """Клавиатура меню консультаций"""
-    return InlineKeyboardMarkup([
-        [InlineKeyboardButton(LANGUAGES[lang]["for_personal"], callback_data="consultations_personal")],
-        [InlineKeyboardButton(LANGUAGES[lang]["for_company"], callback_data="consultations_company")],
-        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="menu_products")]
-    ])
-
 def get_mentoring_menu_keyboard(lang):
     """Клавиатура меню менторинга"""
     return InlineKeyboardMarkup([
@@ -132,10 +124,7 @@ def get_hypno_payment_keyboard(lang, part):
 def get_back_to_hypno_payment_keyboard(lang, part):
     """Клавиатура с кнопкой возврата к выбору валюты"""
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton(
-            LANGUAGES[lang]["back"],
-            callback_data=f"hypno_back_to_payment_{part}"  # Важно сохранять part!
-        )]
+        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data=f"hypno_back_to_payment_{part}")]
     ])
 
 # ЗДЕСЬ УНИКАЛЬНЫЕ КНОПКИ ДЛЯ ВЕБА ПО ФЕМДОМУ
@@ -161,37 +150,70 @@ def get_femdom_payment_keyboard(lang, part):
 def get_back_to_femdom_payment_keyboard(lang, part):
     """Клавиатура с кнопкой возврата к выбору валюты для Femdom"""
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton(
-            LANGUAGES[lang]["back"],
-            callback_data=f"femdom_back_to_payment_{part}"
-        )]
+        [InlineKeyboardButton(LANGUAGES[lang]["back"],callback_data=f"femdom_back_to_payment_{part}")]
     ])
 
 def get_cooperation_keyboard(lang):
     """Клавиатура для раздела сотрудничества"""
     return InlineKeyboardMarkup([
-        [
-            InlineKeyboardButton(
-                "📝 Заявка" if lang == "ru" else "📝 Application",
-                url="https://forms.gle/YOUR_FORM_LINK"
-            )
-        ],
-        [
-            InlineKeyboardButton(
-                "✅ Я заполнил(а)" if lang == "ru" else "✅ I have filled",
-                callback_data="cooperation_filled"
-            )
-        ],
-        [
-            InlineKeyboardButton(
-                LANGUAGES[lang]["back"],
-                callback_data="main_menu"
-            )
-        ]
+        [InlineKeyboardButton("📝 Заявка" if lang == "ru" else "📝 Application",url="https://forms.gle/YOUR_FORM_LINK")],
+        [InlineKeyboardButton("✅ Я заполнил(а)" if lang == "ru" else "✅ I have filled",callback_data="cooperation_filled")],
+        [InlineKeyboardButton(LANGUAGES[lang]["back"],callback_data="main_menu")]
     ])
 
 def get_back_to_menu_keyboard(lang):
     """Универсальная клавиатура с кнопкой 'Назад в меню'"""
     return InlineKeyboardMarkup([
         [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="main_menu")]
+    ])
+
+def get_consultations_menu_keyboard(lang: str):
+    """Клавиатура меню консультаций"""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(LANGUAGES[lang]["consultation_personal"], callback_data="consultation_personal")],
+        [InlineKeyboardButton(LANGUAGES[lang]["consultation_company"], callback_data="consultation_company")],
+        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="menu_products")]
+    ])
+
+def get_personal_consultation_keyboard(lang: str):
+    """Клавиатура подменю 'Для себя'"""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(LANGUAGES[lang]["consultation_love"], callback_data="consultation_type:love")],
+        [InlineKeyboardButton(LANGUAGES[lang]["consultation_work"], callback_data="consultation_type:work")],
+        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="menu_consultations")]
+    ])
+
+def get_company_consultation_keyboard(lang: str):
+    """Клавиатура подменю 'Для компании'"""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(LANGUAGES[lang]["consultation_employee"], callback_data="consultation_type:employee")],
+        [InlineKeyboardButton(LANGUAGES[lang]["consultation_manager"], callback_data="consultation_type:manager")],
+        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="menu_consultations")]
+    ])
+
+def get_consultation_payment_keyboard(lang: str, consultation_type: str):
+    """Клавиатура выбора валюты для консультации"""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(LANGUAGES[lang]["payment_rub"], callback_data=f"consultation_pay:rub:{consultation_type}")],
+        [InlineKeyboardButton(LANGUAGES[lang]["payment_crypto"], callback_data=f"consultation_pay:crypto:{consultation_type}")],
+        [InlineKeyboardButton(LANGUAGES[lang]["payment_eur"], callback_data=f"consultation_pay:eur:{consultation_type}")],
+        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data=f"consultation_back:{consultation_type}")]
+    ])
+
+def get_back_to_consultation_type_keyboard(lang: str, consultation_type: str):
+    """Клавиатура с кнопкой возврата к выбору типа консультации"""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(
+            LANGUAGES[lang]["back"],
+            callback_data=f"consultation_back:{consultation_type}"
+        )]
+    ])
+
+def get_back_to_consultation_payment_keyboard(lang: str, consultation_type: str):
+    """Клавиатура возврата к выбору валюты"""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(
+            LANGUAGES[lang]["back"],
+            callback_data=f"consultation_type:{consultation_type}"
+        )]
     ])

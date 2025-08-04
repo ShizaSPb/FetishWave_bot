@@ -11,14 +11,15 @@ from bot.utils.keyboards import (
     get_hypno_payment_keyboard,
     get_back_to_hypno_payment_keyboard,
     get_femdom_payment_keyboard,
-    get_back_to_femdom_payment_keyboard
+    get_back_to_femdom_payment_keyboard,
+    get_back_to_consultation_payment_keyboard,
+    get_consultation_payment_keyboard
 )
 from bot.utils.logger import log_action
 
 logger = logging.getLogger(__name__)
 
-
-# Common payment handlers
+# Общие обработчики платежей
 async def show_payment_methods(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     log_action("payment_methods_open", user_id)
@@ -38,13 +39,35 @@ async def show_payment_methods(update: Update, context: ContextTypes.DEFAULT_TYP
         )
         log_action("payment_methods_shown", user_id, {"webinar_id": webinar_id})
     except Exception as e:
-        log_action("payment_methods_error", user_id, {
-            "webinar_id": webinar_id,
-            "error": str(e)
-        })
+        log_action("payment_methods_error", user_id, {"webinar_id": webinar_id, "error": str(e)})
         logger.error(f"Error in show_payment_methods: {e}", exc_info=True)
         raise
 
+async def show_consultation_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    log_action("consultation_payment_open", user_id)
+
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+        _, currency, consultation_type = query.data.split(":")
+
+        description = DESCRIPTIONS[lang][f"consultation_{consultation_type}_desc"]
+        payment_details = {
+            "rub": DESCRIPTIONS[lang]["payment_rub_details"],
+            "crypto": DESCRIPTIONS[lang]["payment_crypto_details"],
+            "eur": DESCRIPTIONS[lang]["payment_eur_details"]
+        }[currency]
+
+        await query.edit_message_text(
+            text=f"{description}\n\n{payment_details}",
+            reply_markup=get_back_to_consultation_payment_keyboard(lang, consultation_type),
+            parse_mode='HTML'
+        )
+    except Exception as e:
+        log_action("consultation_payment_error", user_id, {"error": str(e)})
+        logger.error(f"Error in show_consultation_payment: {e}")
 
 async def show_rub_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
@@ -65,13 +88,9 @@ async def show_rub_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         log_action("rub_payment_shown", user_id, {"webinar_id": webinar_id})
     except Exception as e:
-        log_action("rub_payment_error", user_id, {
-            "webinar_id": webinar_id,
-            "error": str(e)
-        })
+        log_action("rub_payment_error", user_id, {"webinar_id": webinar_id, "error": str(e)})
         logger.error(f"Error in show_rub_payment: {e}", exc_info=True)
         raise
-
 
 async def show_crypto_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
@@ -92,13 +111,9 @@ async def show_crypto_payment(update: Update, context: ContextTypes.DEFAULT_TYPE
         )
         log_action("crypto_payment_shown", user_id, {"webinar_id": webinar_id})
     except Exception as e:
-        log_action("crypto_payment_error", user_id, {
-            "webinar_id": webinar_id,
-            "error": str(e)
-        })
+        log_action("crypto_payment_error", user_id, {"webinar_id": webinar_id, "error": str(e)})
         logger.error(f"Error in show_crypto_payment: {e}", exc_info=True)
         raise
-
 
 async def show_eur_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
@@ -119,13 +134,9 @@ async def show_eur_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         log_action("eur_payment_shown", user_id, {"webinar_id": webinar_id})
     except Exception as e:
-        log_action("eur_payment_error", user_id, {
-            "webinar_id": webinar_id,
-            "error": str(e)
-        })
+        log_action("eur_payment_error", user_id, {"webinar_id": webinar_id, "error": str(e)})
         logger.error(f"Error in show_eur_payment: {e}", exc_info=True)
         raise
-
 
 # Hypno payment handlers
 async def show_hypno_rub_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -155,7 +166,6 @@ async def show_hypno_rub_payment(update: Update, context: ContextTypes.DEFAULT_T
         logger.error(f"Error in show_hypno_rub_payment: {e}", exc_info=True)
         await query.answer("⚠️ Ошибка при загрузке реквизитов")
 
-
 async def show_hypno_crypto_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     log_action("hypno_crypto_payment_open", user_id)
@@ -180,7 +190,6 @@ async def show_hypno_crypto_payment(update: Update, context: ContextTypes.DEFAUL
     except Exception as e:
         logger.error(f"Error in show_hypno_crypto_payment: {e}")
         await query.answer("⚠️ Ошибка при загрузке реквизитов")
-
 
 async def show_hypno_eur_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
@@ -207,7 +216,6 @@ async def show_hypno_eur_payment(update: Update, context: ContextTypes.DEFAULT_T
         logger.error(f"Error in show_hypno_eur_payment: {e}")
         await query.answer("⚠️ Ошибка при загрузке реквизитов")
 
-
 async def back_to_hypno_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         query = update.callback_query
@@ -215,9 +223,8 @@ async def back_to_hypno_payment(update: Update, context: ContextTypes.DEFAULT_TY
         lang = context.user_data.get('lang', 'ru')
         part = query.data.replace("hypno_back_to_payment_", "")
 
-        description_key = f"webinar_hypno_part_{part}"
         description = WEBINAR_DESCRIPTIONS.get(lang, {}).get(
-            description_key,
+            f"webinar_hypno_part_{part}",
             f"Описание части {part} не найдено"
         )
 
@@ -235,7 +242,6 @@ async def back_to_hypno_payment(update: Update, context: ContextTypes.DEFAULT_TY
     except Exception as e:
         logger.error(f"Error in back_to_hypno_payment: {e}")
         await query.answer("⚠️ Ошибка при возврате")
-
 
 # Femdom payment handlers
 async def show_femdom_rub_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -262,7 +268,6 @@ async def show_femdom_rub_payment(update: Update, context: ContextTypes.DEFAULT_
         log_action("femdom_rub_payment_error", user_id, {"error": str(e)})
         await query.answer("⚠️ Ошибка при загрузке реквизитов")
 
-
 async def show_femdom_crypto_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     log_action("femdom_crypto_payment_open", user_id)
@@ -286,7 +291,6 @@ async def show_femdom_crypto_payment(update: Update, context: ContextTypes.DEFAU
     except Exception as e:
         logger.error(f"Error in show_femdom_crypto_payment: {e}")
         await query.answer("⚠️ Ошибка при загрузке реквизитов")
-
 
 async def show_femdom_eur_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
@@ -312,7 +316,6 @@ async def show_femdom_eur_payment(update: Update, context: ContextTypes.DEFAULT_
         logger.error(f"Error in show_femdom_eur_payment: {e}")
         await query.answer("⚠️ Ошибка при загрузке реквизитов")
 
-
 async def back_to_femdom_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         query = update.callback_query
@@ -320,9 +323,8 @@ async def back_to_femdom_payment(update: Update, context: ContextTypes.DEFAULT_T
         lang = context.user_data.get('lang', 'ru')
         part = query.data.replace("femdom_back_to_payment_", "")
 
-        description_key = f"webinar_femdom_part_{part}"
         description = WEBINAR_DESCRIPTIONS.get(lang, {}).get(
-            description_key,
+            f"webinar_femdom_part_{part}",
             f"Описание части {part} не найдено"
         )
 
@@ -341,13 +343,13 @@ async def back_to_femdom_payment(update: Update, context: ContextTypes.DEFAULT_T
         logger.error(f"Error in back_to_femdom_payment: {e}")
         await query.answer("⚠️ Ошибка при возврате")
 
-
 handlers = [
     # Common payments
     CallbackQueryHandler(show_payment_methods, pattern="^payment_methods_"),
     CallbackQueryHandler(show_rub_payment, pattern="^pay_rub_"),
     CallbackQueryHandler(show_crypto_payment, pattern="^pay_crypto_"),
     CallbackQueryHandler(show_eur_payment, pattern="^pay_eur_"),
+    CallbackQueryHandler(show_consultation_payment, pattern="^consultation_pay:"),
 
     # Hypno payments
     CallbackQueryHandler(show_hypno_rub_payment, pattern="^hypno_pay:rub:"),

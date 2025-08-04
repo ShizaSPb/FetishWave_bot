@@ -11,7 +11,12 @@ from bot.utils.keyboards import (
     get_mentoring_menu_keyboard,
     get_page_audit_menu_keyboard,
     get_private_channel_menu_keyboard,
-    get_welcome_keyboard, get_cooperation_keyboard, get_back_to_menu_keyboard
+    get_welcome_keyboard,
+    get_cooperation_keyboard,
+    get_back_to_menu_keyboard,
+    get_personal_consultation_keyboard,
+    get_company_consultation_keyboard,
+    get_consultation_payment_keyboard
 )
 from bot.utils.logger import log_action
 from config import ADMIN_CHAT_ID
@@ -106,6 +111,7 @@ async def show_offer_cooperation_menu(update: Update, context: ContextTypes.DEFA
 
         await query.edit_message_text(
             text=DESCRIPTIONS[lang]["offer_cooperation"],
+            reply_markup=get_cooperation_keyboard(lang),
             parse_mode='HTML'
         )
         log_action("offer_cooperation_menu_shown", user_id)
@@ -194,28 +200,6 @@ async def show_private_channel_menu(update: Update, context: ContextTypes.DEFAUL
         logger.error(f"Error in show_private_channel_menu: {e}", exc_info=True)
         raise
 
-
-async def show_offer_cooperation_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    log_action("offer_cooperation_menu_open", user_id)
-
-    try:
-        query = update.callback_query
-        await query.answer()
-        lang = context.user_data.get('lang', 'ru')
-
-        await query.edit_message_text(
-            text=DESCRIPTIONS[lang]["offer_cooperation"],
-            reply_markup=get_cooperation_keyboard(lang),
-            parse_mode='HTML'
-        )
-        log_action("offer_cooperation_menu_shown", user_id)
-    except Exception as e:
-        log_action("offer_cooperation_menu_error", user_id, {"error": str(e)})
-        logger.error(f"Error in show_offer_cooperation_menu: {e}", exc_info=True)
-        raise
-
-
 async def handle_cooperation_filled(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         query = update.callback_query
@@ -223,7 +207,6 @@ async def handle_cooperation_filled(update: Update, context: ContextTypes.DEFAUL
         user = update.effective_user
         lang = context.user_data.get('lang', 'ru')
 
-        # Формируем сообщение для админа
         user_info = f"@{user.username}" if user.username else f"ID: {user.id}"
         admin_message = (
             f"🚀 <b>Новая заявка на сотрудничество</b>\n\n"
@@ -232,14 +215,12 @@ async def handle_cooperation_filled(update: Update, context: ContextTypes.DEFAUL
             f"📅 Время: {datetime.now().strftime('%d.%m.%Y %H:%M')}"
         )
 
-        # Отправляем админу
         await context.bot.send_message(
             chat_id=ADMIN_CHAT_ID,
             text=admin_message,
             parse_mode='HTML'
         )
 
-        # Подтверждение пользователю
         await query.edit_message_text(
             text=DESCRIPTIONS[lang]["cooperation_thanks"],
             reply_markup=get_back_to_menu_keyboard(lang),
@@ -247,20 +228,99 @@ async def handle_cooperation_filled(update: Update, context: ContextTypes.DEFAUL
         )
 
         log_action("cooperation_notification_sent", user.id)
-
     except Exception as e:
         log_action("cooperation_notification_failed", user.id, {"error": str(e)})
         await query.answer("⚠️ Ошибка при отправке уведомления")
         logger.error(f"Cooperation notification error: {e}")
 
+async def show_personal_consultation_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    log_action("personal_consultation_open", user_id)
+
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+
+        await query.edit_message_text(
+            text=DESCRIPTIONS[lang]["consultation_personal_desc"],
+            reply_markup=get_personal_consultation_keyboard(lang),
+            parse_mode='HTML'
+        )
+    except Exception as e:
+        log_action("personal_consultation_error", user_id, {"error": str(e)})
+        logger.error(f"Error in show_personal_consultation_menu: {e}")
+
+async def handle_consultation_type_selection(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    log_action("consultation_type_selected", user_id)
+
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+
+        consultation_type = query.data.split(":")[1]
+        context.user_data['current_consultation'] = consultation_type
+
+        description = DESCRIPTIONS[lang].get(
+            f"consultation_{consultation_type}_desc",
+            LANGUAGES[lang].get("default_description", "")
+        )
+
+        await query.edit_message_text(
+            text=f"{description}\n\n{LANGUAGES[lang]['choose_payment']}",
+            reply_markup=get_consultation_payment_keyboard(lang, consultation_type),
+            parse_mode='HTML'
+        )
+    except Exception as e:
+        log_action("consultation_type_error", user_id, {"error": str(e)})
+        logger.error(f"Error in handle_consultation_type_selection: {e}")
+
+async def show_company_consultation_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    log_action("company_consultation_open", user_id)
+
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+
+        await query.edit_message_text(
+            text=DESCRIPTIONS[lang]["consultation_company_desc"],
+            reply_markup=get_company_consultation_keyboard(lang),
+            parse_mode='HTML'
+        )
+    except Exception as e:
+        log_action("company_consultation_error", user_id, {"error": str(e)})
+        logger.error(f"Error in show_company_consultation_menu: {e}")
+
+async def back_to_consultation_type(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+        consultation_type = query.data.split(":")[1]
+
+        if consultation_type in ["love", "work"]:
+            await show_personal_consultation_menu(update, context)
+        else:
+            await show_company_consultation_menu(update, context)
+    except Exception as e:
+        logger.error(f"Error in back_to_consultation_type: {e}")
+
 handlers = [
     # Main menus
     CallbackQueryHandler(show_main_menu, pattern="^main_menu$"),
     CallbackQueryHandler(show_products_menu, pattern="^menu_products$"),
+    CallbackQueryHandler(show_offer_cooperation_menu, pattern="^menu_offer_cooperation$"),
+    CallbackQueryHandler(handle_cooperation_filled, pattern="^cooperation_filled$"),
     CallbackQueryHandler(show_consultations_menu, pattern="^menu_consultations$"),
     CallbackQueryHandler(show_mentoring_menu, pattern="^menu_mentoring$"),
     CallbackQueryHandler(show_page_audit_menu, pattern="^menu_page_audit$"),
     CallbackQueryHandler(show_private_channel_menu, pattern="^menu_private_channel$"),
-    CallbackQueryHandler(show_offer_cooperation_menu, pattern="^menu_offer_cooperation$"),
-    CallbackQueryHandler(handle_cooperation_filled, pattern="^cooperation_filled$"),
+    CallbackQueryHandler(show_personal_consultation_menu, pattern="^consultation_personal$"),
+    CallbackQueryHandler(show_company_consultation_menu, pattern="^consultation_company$"),
+    CallbackQueryHandler(handle_consultation_type_selection, pattern="^consultation_type:"),
+    CallbackQueryHandler(back_to_consultation_type, pattern="^consultation_back:"),
 ]
