@@ -83,6 +83,16 @@ DESCRIPTIONS = {
             "Ваша заявка на аудит принята. Мы свяжемся с вами в ближайшее время."
         ),
 
+        "buy_ads_desc": (
+            "📢 <b>Покупка рекламы</b>\n\n"
+            "Размещение рекламы в наших каналах и проектах. "
+            "После заполнения формы мы свяжемся с вами для уточнения деталей."
+        ),
+        "buy_ads_thanks": (
+            "✅ <b>Спасибо!</b>\n\n"
+            "Ваша заявка на покупку рекламы принята. Мы свяжемся с вами в ближайшее время."
+        ),
+
 
     },
 
@@ -172,5 +182,15 @@ DESCRIPTIONS = {
             "✅ <b>Thank you!</b>\n\n"
             "Your audit application has been received. We'll contact you soon."
         ),
+
+        "buy_ads_desc": (
+            "📢 <b>Buy Ads</b>\n\n"
+            "Advertising placement in our channels and projects. "
+            "After submitting the form, we'll contact you to discuss details."
+        ),
+        "buy_ads_thanks": (
+            "✅ <b>Thank you!</b>\n\n"
+            "Your ad purchase request has been received. We'll contact you soon."
+        )
     }
 }

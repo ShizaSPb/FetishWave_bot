@@ -224,24 +224,38 @@ def get_mentoring_thanks_keyboard(lang: str) -> InlineKeyboardMarkup:
         [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="menu_mentoring")]
     ])
 
-def get_page_audit_menu_keyboard(lang):
-    """Клавиатура меню аудита страниц"""
-    return InlineKeyboardMarkup([
-        [InlineKeyboardButton(LANGUAGES[lang]["for_personal"], callback_data="audit_personal")],
-        [InlineKeyboardButton(LANGUAGES[lang]["for_company"], callback_data="audit_company")],
-        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="menu_products")]
-    ])
-
 def get_audit_keyboard(lang: str, audit_type: str):
     """Клавиатура для раздела аудита"""
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("📝 Заявка" if lang == "ru" else "📝 Application", url="https://forms.gle/YOUR_AUDIT_FORM_LINK")],
-        [InlineKeyboardButton("✅ Я заполнил(а)" if lang == "ru" else "✅ I have filled", callback_data=f"audit_filled_{audit_type}")],
+        [InlineKeyboardButton(LANGUAGES[lang]["audit_form"], url="https://forms.gle/YOUR_AUDIT_FORM_LINK")],
+        [InlineKeyboardButton(LANGUAGES[lang]["audit_form_filled"], callback_data=f"audit_filled_{audit_type}")],
         [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="menu_page_audit")]
+    ])
+
+def get_page_audit_menu_keyboard(lang):
+    """Клавиатура меню аудита страниц"""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(LANGUAGES[lang]["audit_personal"], callback_data="audit_personal")],
+        [InlineKeyboardButton(LANGUAGES[lang]["audit_company"], callback_data="audit_company")],
+        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="menu_products")]
     ])
 
 def get_audit_thanks_keyboard(lang: str) -> InlineKeyboardMarkup:
     """Клавиатура после отправки заявки на аудит"""
     return InlineKeyboardMarkup([
         [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="menu_page_audit")]
+    ])
+
+def get_buy_ads_keyboard(lang: str):
+    """Клавиатура для раздела покупки рекламы"""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(LANGUAGES[lang]["buy_ads_form"], url="https://forms.gle/YOUR_ADS_FORM_LINK")],
+        [InlineKeyboardButton(LANGUAGES[lang]["buy_ads_form_filled"], callback_data="buy_ads_filled")],
+        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="main_menu")]
+    ])
+
+def get_buy_ads_thanks_keyboard(lang: str) -> InlineKeyboardMarkup:
+    """Клавиатура после отправки заявки на покупку рекламы"""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="main_menu")]
     ])

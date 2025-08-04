@@ -17,7 +17,7 @@ from bot.utils.keyboards import (
     get_personal_consultation_keyboard,
     get_company_consultation_keyboard,
     get_consultation_payment_keyboard, get_mentoring_keyboard, get_mentoring_thanks_keyboard, get_audit_thanks_keyboard,
-    get_audit_keyboard
+    get_audit_keyboard, get_buy_ads_thanks_keyboard, get_buy_ads_keyboard
 )
 from bot.utils.logger import log_action
 from config import ADMIN_CHAT_ID
@@ -403,8 +403,17 @@ async def show_personal_audit(update: Update, context: ContextTypes.DEFAULT_TYPE
         await query.answer()
         lang = context.user_data.get('lang', 'ru')
 
+        message_text = (
+            "🔍 <b>{}</b>\n\n{}\n\n{}".format(
+                LANGUAGES[lang]["audit_personal"],
+                LANGUAGES[lang]["audit_personal_desc"],
+                "После заполнения формы мы свяжемся с вами для уточнения деталей." if lang == "ru" else
+                "After submitting the form, we'll contact you to discuss details."
+            )
+        )
+
         await query.edit_message_text(
-            text=DESCRIPTIONS[lang].get("audit_personal_desc", "Аудит страниц для личных целей"),
+            text=message_text,
             reply_markup=get_audit_keyboard(lang, "personal"),
             parse_mode='HTML'
         )
@@ -430,16 +439,26 @@ async def show_company_audit(update: Update, context: ContextTypes.DEFAULT_TYPE)
         log_action("company_audit_error", user_id, {"error": str(e)})
         logger.error(f"Error in show_company_audit: {e}")
 
+
 async def handle_audit_filled(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         query = update.callback_query
         await query.answer()
         user = update.effective_user
         lang = context.user_data.get('lang', 'ru')
+        audit_type = query.data.split('_')[-1]  # Получаем тип аудита (personal/company)
 
         # Отправка уведомления админу
         user_info = f"@{user.username}" if user.username else f"ID: {user.id}"
-        admin_message = f"🚀 <b>Новая заявка на аудит страниц</b>\n\n👤 Пользователь: <a href='tg://user?id={user.id}'>{user_info}</a>\n🆔 ID: {user.id}\n📅 Время: {datetime.now().strftime('%d.%m.%Y %H:%M')}"
+        audit_type_localized = LANGUAGES[lang][f"audit_{audit_type}"]
+
+        admin_message = (
+            f"🚀 <b>Новая заявка на аудит</b>\n\n"
+            f"🔹 Тип: {audit_type_localized}\n"
+            f"👤 Пользователь: <a href='tg://user?id={user.id}'>{user_info}</a>\n"
+            f"🆔 ID: {user.id}\n"
+            f"📅 Время: {datetime.now().strftime(DESCRIPTIONS[lang]['time_format'])}"
+        )
 
         await context.bot.send_message(
             chat_id=ADMIN_CHAT_ID,
@@ -449,16 +468,82 @@ async def handle_audit_filled(update: Update, context: ContextTypes.DEFAULT_TYPE
 
         # Подтверждение пользователю
         await query.edit_message_text(
-            text=DESCRIPTIONS[lang]["audit_thanks"],
+            text=LANGUAGES[lang]["audit_thanks"],
             reply_markup=get_audit_thanks_keyboard(lang),
             parse_mode='HTML'
         )
 
-        log_action("audit_notification_sent", user.id)
+        log_action("audit_notification_sent", user.id, {"audit_type": audit_type})
     except Exception as e:
-        log_action("audit_notification_failed", user.id, {"error": str(e)})
+        log_action("audit_notification_failed", user.id, {
+            "error": str(e),
+            "audit_type": audit_type
+        })
         await query.answer("⚠️ Ошибка при отправке уведомления")
-        logger.error(f"Audit notification error: {e}")
+        logger.error(f"Audit notification error: {e}", exc_info=True)
+
+async def show_buy_ads(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    log_action("buy_ads_open", user_id)
+
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+
+        message_text = (
+            f"{LANGUAGES[lang]['buy_ads_title']}\n\n"
+            f"{LANGUAGES[lang]['buy_ads_desc']}\n\n"
+            "После заполнения формы мы свяжемся с вами для уточнения деталей."
+            if lang == "ru" else
+            f"{LANGUAGES[lang]['buy_ads_title']}\n\n"
+            f"{LANGUAGES[lang]['buy_ads_desc']}\n\n"
+            "After submitting the form, we'll contact you to discuss details."
+        )
+
+        await query.edit_message_text(
+            text=message_text,
+            reply_markup=get_buy_ads_keyboard(lang),
+            parse_mode='HTML'
+        )
+    except Exception as e:
+        log_action("buy_ads_error", user_id, {"error": str(e)})
+        logger.error(f"Error in show_buy_ads: {e}")
+
+async def handle_buy_ads_filled(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        query = update.callback_query
+        await query.answer()
+        user = update.effective_user
+        lang = context.user_data.get('lang', 'ru')
+
+        # Отправка уведомления админу
+        user_info = f"@{user.username}" if user.username else f"ID: {user.id}"
+        admin_message = (
+            f"🚀 <b>Новая заявка на покупку рекламы</b>\n\n"
+            f"👤 Пользователь: <a href='tg://user?id={user.id}'>{user_info}</a>\n"
+            f"🆔 ID: {user.id}\n"
+            f"📅 Время: {datetime.now().strftime('%d.%m.%Y %H:%M')}"
+        )
+
+        await context.bot.send_message(
+            chat_id=ADMIN_CHAT_ID,
+            text=admin_message,
+            parse_mode='HTML'
+        )
+
+        # Подтверждение пользователю
+        await query.edit_message_text(
+            text=LANGUAGES[lang]["buy_ads_thanks"],
+            reply_markup=get_buy_ads_thanks_keyboard(lang),
+            parse_mode='HTML'
+        )
+
+        log_action("buy_ads_notification_sent", user.id)
+    except Exception as e:
+        log_action("buy_ads_notification_failed", user.id, {"error": str(e)})
+        await query.answer("⚠️ Ошибка при отправке уведомления")
+        logger.error(f"Buy ads notification error: {e}")
 
 handlers = [
     # Main menus
@@ -480,4 +565,6 @@ handlers = [
     CallbackQueryHandler(show_personal_audit, pattern="^audit_personal$"),
     CallbackQueryHandler(show_company_audit, pattern="^audit_company$"),
     CallbackQueryHandler(handle_audit_filled, pattern="^audit_filled_"),
+    CallbackQueryHandler(show_buy_ads, pattern="^menu_buy_ads$"),
+    CallbackQueryHandler(handle_buy_ads_filled, pattern="^buy_ads_filled$"),
 ]

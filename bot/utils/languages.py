@@ -37,7 +37,6 @@ LANGUAGES = {
         "main_menu": "🏠 Главное меню",
         "products": "📦 Продукты",
         "book_session": "📅 Записаться на сессию",
-        "buy_ads": "🛒 Купить рекламу",
         "offer_cooperation": "🤝 Предложить сотрудничество",
         "ask_question": "❓ Задать вопрос",
         "leave_review": "⭐ Оставить отзыв",
@@ -92,6 +91,24 @@ LANGUAGES = {
         # === Менторинг ===
         "mentoring_personal": "👨‍💻 Личный менторинг",
         "mentoring_company": "🏢 Бизнес менторинг",
+
+        # === Аудит ===
+        "audit": "🔍 Аудит страниц",
+        "audit_personal": "👨‍💻 Для себя",
+        "audit_company": "🏢 Для компании",
+        "audit_personal_desc": "Подробный анализ ваших личных страниц с рекомендациями по улучшению.",
+        "audit_company_desc": "Профессиональный анализ бизнес-страниц.",
+        "audit_thanks": "✅ <b>Спасибо!</b>\n\nВаша заявка на аудит принята. Мы свяжемся с вами в ближайшее время.",
+        "audit_form": "📝 Заявка",
+        "audit_form_filled": "✅ Я заполнил(а)",
+
+        # === Купить рекламу ===
+        "buy_ads": "🛒 Купить рекламу",
+        "buy_ads_title": "📢 <b>Покупка рекламы</b>",
+        "buy_ads_desc": "Размещение рекламы в наших каналах и проектах.",
+        "buy_ads_thanks": "✅ <b>Спасибо!</b>\n\nВаша заявка на покупку рекламы принята. Мы свяжемся с вами в ближайшее время.",
+        "buy_ads_form": "📝 Заявка",
+        "buy_ads_form_filled": "✅ Я заполнил(а)",
     },
 
 
@@ -135,7 +152,6 @@ LANGUAGES = {
         "main_menu": "🏠 Main Menu",
         "products": "📦 Products",
         "book_session": "📅 Book a session",
-        "buy_ads": "🛒 Buy ads",
         "offer_cooperation": "🤝 Offer cooperation",
         "ask_question": "❓ Ask a question",
         "leave_review": "⭐ Leave a review",
@@ -190,5 +206,23 @@ LANGUAGES = {
         # === Mentoring ===
         "mentoring_personal": "👨‍💻 Personal Mentoring",
         "mentoring_company": "🏢 Business Mentoring",
+
+        # === Audit ===
+        "audit": "🔍 Page audit",
+        "audit_personal": "👨‍💻 For personal",
+        "audit_company": "🏢 For company",
+        "audit_personal_desc": "Detailed analysis of your personal pages with improvement recommendations.",
+        "audit_company_desc": "Professional analysis of business pages.",
+        "audit_thanks": "✅ <b>Thank you!</b>\n\nYour audit application has been received. We'll contact you soon.",
+        "audit_form": "📝 Application",
+        "audit_form_filled": "✅ I have filled",
+
+        # === Buy ads ===
+        "buy_ads": "🛒 Buy ads",
+        "buy_ads_title": "📢 <b>Buy Ads</b>",
+        "buy_ads_desc": "Advertising placement in our channels and projects.",
+        "buy_ads_thanks": "✅ <b>Thank you!</b>\n\nYour ad purchase request has been received. We'll contact you soon.",
+        "buy_ads_form": "📝 Application",
+        "buy_ads_form_filled": "✅ I have filled",
     }
 }
