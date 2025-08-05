@@ -71,6 +71,14 @@ LANGUAGES = {
         "payment_crypto": "₿ Crypto (USDT TRC20)",
         "payment_eur": "€ Euro",
         "upload_payment_screenshot": "📤 Загрузить скриншот оплаты",
+        "upload_payment_instructions": (
+            "📤 <b>Загрузите скриншот оплаты</b>\n\n"
+            "Пожалуйста, отправьте скриншот или PDF-документ с подтверждением оплаты.\n"
+            "Другие типы файлов не принимаются."
+        ),
+        "invalid_file_type": "⚠️ Пожалуйста, отправьте только скриншот (JPEG/PNG) или PDF-документ",
+        "screenshot_received": "✅ Скриншот оплаты получен. Мы проверим его и свяжемся с вами.",
+        "upload_error": "⚠️ Произошла ошибка при обработке файла. Пожалуйста, попробуйте еще раз.",
         "payment_error": "⚠️ Ошибка обработки платежа",
 
         # === Разное ===
@@ -202,6 +210,14 @@ LANGUAGES = {
         "payment_crypto": "₿ Crypto (USDT TRC20)",
         "payment_eur": "€ Euro",
         "upload_payment_screenshot": "📤 Upload payment screenshot",
+        "upload_payment_instructions": (
+            "📤 <b>Upload payment screenshot</b>\n\n"
+            "Please send a screenshot or PDF document with payment confirmation.\n"
+            "Other file types are not accepted."
+        ),
+        "invalid_file_type": "⚠️ Please send only a screenshot (JPEG/PNG) or PDF document",
+        "screenshot_received": "✅ Payment screenshot received. We will check it and contact you.",
+        "upload_error": "⚠️ An error occurred while processing the file. Please try again.",
         "payment_error": "⚠️ Payment processing error",
 
         # === Miscellaneous ===

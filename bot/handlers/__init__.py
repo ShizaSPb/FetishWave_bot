@@ -6,7 +6,7 @@ from .registration import register_conversation_handler
 from .menu import handlers as menu_handlers, show_main_menu, show_products_menu, show_consultations_menu, \
     show_mentoring_menu, show_page_audit_menu, show_session_menu
 from .webinars import handlers as webinars_handlers, show_webinars_menu
-from .payments import handlers as payments_handlers
+from .payments import handlers as payments_handlers, handle_document
 from bot.utils.logger import log_action
 from telegram import Update
 from telegram.ext import ContextTypes, MessageHandler, filters
@@ -66,7 +66,8 @@ def get_handlers():
         *webinars_handlers,
         *payments_handlers,
         register_conversation_handler,
-        MessageHandler(filters.TEXT & ~filters.COMMAND, block_text_input)
+        MessageHandler(filters.TEXT & ~filters.COMMAND, block_text_input),
+        MessageHandler(filters.Document.ALL | filters.PHOTO, handle_document),
     ]
 
 

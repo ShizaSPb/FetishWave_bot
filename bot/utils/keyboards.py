@@ -318,3 +318,15 @@ def get_back_to_currency_selection_keyboard(lang):
     return InlineKeyboardMarkup([
         [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="online_session_payment")]
     ])
+
+def get_upload_instructions_keyboard(lang: str, back_pattern: str) -> InlineKeyboardMarkup:
+    """Клавиатура для экрана загрузки скриншота"""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data=back_pattern)]
+    ])
+
+def get_success_upload_keyboard(lang: str) -> InlineKeyboardMarkup:
+    """Клавиатура после успешной загрузки скриншота"""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(LANGUAGES[lang]["back_to_menu"], callback_data="main_menu")]
+    ])

@@ -15,7 +15,8 @@ from bot.utils.keyboards import (
     get_femdom_payment_keyboard,
     get_back_to_femdom_payment_keyboard,
     get_back_to_consultation_payment_keyboard,
-    get_online_session_payment_keyboard, get_back_to_menu_keyboard, get_back_to_currency_selection_keyboard
+    get_online_session_payment_keyboard, get_back_to_currency_selection_keyboard,
+    get_upload_instructions_keyboard, get_success_upload_keyboard,
 )
 from bot.utils.logger import log_action
 
@@ -408,82 +409,140 @@ async def back_to_currency_selection(update: Update, context: ContextTypes.DEFAU
 
 
 async def handle_upload_screenshot(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработчик кнопки загрузки скриншота (заглушка)"""
     try:
         query = update.callback_query
         await query.answer()
         lang = context.user_data.get('lang', 'ru')
+        webinar_id = query.data.split(":")[1]
+
+        context.user_data['awaiting_screenshot'] = True
+        context.user_data['current_payment_type'] = f"webinar_{webinar_id}"
 
         await query.edit_message_text(
-            text=LANGUAGES[lang]["upload_payment_screenshot"] + " (функция в разработке)",
-            reply_markup=get_back_to_payment_methods_keyboard("webinar_id", lang)  # Заглушка
+            text=LANGUAGES[lang]["upload_payment_instructions"],
+            reply_markup=get_upload_instructions_keyboard(lang, f"payment_methods_{webinar_id}"),
+            parse_mode='HTML'
         )
     except Exception as e:
         logger.error(f"Error in handle_upload_screenshot: {e}")
 
 
-# Добавить аналогичные обработчики для других типов платежей
 async def handle_hypno_upload_screenshot(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработчик кнопки загрузки скриншота для гипно вебинара (заглушка)"""
     try:
         query = update.callback_query
         await query.answer()
         lang = context.user_data.get('lang', 'ru')
         part = query.data.split(":")[1]
 
+        context.user_data['awaiting_screenshot'] = True
+        context.user_data['current_payment_type'] = f"hypno_part_{part}"
+
         await query.edit_message_text(
-            text=LANGUAGES[lang]["upload_payment_screenshot"] + " (функция в разработке)",
-            reply_markup=get_back_to_hypno_payment_keyboard(lang, part)
+            text=LANGUAGES[lang]["upload_payment_instructions"],
+            reply_markup=get_upload_instructions_keyboard(lang, f"hypno_back_to_payment_{part}"),
+            parse_mode='HTML'
         )
     except Exception as e:
         logger.error(f"Error in handle_hypno_upload_screenshot: {e}")
 
 
 async def handle_femdom_upload_screenshot(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработчик кнопки загрузки скриншота для фемдом вебинара (заглушка)"""
     try:
         query = update.callback_query
         await query.answer()
         lang = context.user_data.get('lang', 'ru')
         part = query.data.split(":")[1]
 
+        context.user_data['awaiting_screenshot'] = True
+        context.user_data['current_payment_type'] = f"femdom_part_{part}"
+
         await query.edit_message_text(
-            text=LANGUAGES[lang]["upload_payment_screenshot"] + " (функция в разработке)",
-            reply_markup=get_back_to_femdom_payment_keyboard(lang, part)
+            text=LANGUAGES[lang]["upload_payment_instructions"],
+            reply_markup=get_upload_instructions_keyboard(lang, f"femdom_back_to_payment_{part}"),
+            parse_mode='HTML'
         )
     except Exception as e:
         logger.error(f"Error in handle_femdom_upload_screenshot: {e}")
 
 
 async def handle_consultation_upload_screenshot(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработчик кнопки загрузки скриншота для консультаций (заглушка)"""
     try:
         query = update.callback_query
         await query.answer()
         lang = context.user_data.get('lang', 'ru')
         consultation_type = query.data.split(":")[1]
 
+        context.user_data['awaiting_screenshot'] = True
+        context.user_data['current_payment_type'] = f"consultation_{consultation_type}"
+
         await query.edit_message_text(
-            text=LANGUAGES[lang]["upload_payment_screenshot"] + " (функция в разработке)",
-            reply_markup=get_back_to_consultation_payment_keyboard(lang, consultation_type)
+            text=LANGUAGES[lang]["upload_payment_instructions"],
+            reply_markup=get_upload_instructions_keyboard(lang, f"consultation_back:{consultation_type}"),
+            parse_mode='HTML'
         )
     except Exception as e:
         logger.error(f"Error in handle_consultation_upload_screenshot: {e}")
 
 
 async def handle_online_session_upload_screenshot(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработчик кнопки загрузки скриншота для онлайн сессии (заглушка)"""
     try:
         query = update.callback_query
         await query.answer()
         lang = context.user_data.get('lang', 'ru')
 
+        context.user_data['awaiting_screenshot'] = True
+        context.user_data['current_payment_type'] = "online_session"
+
         await query.edit_message_text(
-            text=LANGUAGES[lang]["upload_payment_screenshot"] + " (функция в разработке)",
-            reply_markup=get_back_to_currency_selection_keyboard(lang)
+            text=LANGUAGES[lang]["upload_payment_instructions"],
+            reply_markup=get_upload_instructions_keyboard(lang, "online_session_payment"),
+            parse_mode='HTML'
         )
     except Exception as e:
         logger.error(f"Error in handle_online_session_upload_screenshot: {e}")
+
+
+async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    lang = context.user_data.get('lang', 'ru')
+
+    if not context.user_data.get('awaiting_screenshot'):
+        return
+
+    # Проверяем тип файла
+    file = None
+    if update.message.document:
+        file = update.message.document
+        if file.mime_type not in ['application/pdf', 'image/jpeg', 'image/png']:
+            await update.message.reply_text(LANGUAGES[lang]["invalid_file_type"])
+            return
+    elif update.message.photo:
+        file = update.message.photo[-1]
+    else:
+        await update.message.reply_text(LANGUAGES[lang]["invalid_file_type"])
+        return
+
+    try:
+        payment_type = context.user_data.get('current_payment_type', 'unknown')
+
+        # Удаляем флаг ожидания
+        del context.user_data['awaiting_screenshot']
+        del context.user_data['current_payment_type']
+
+        # Подтверждаем получение
+        await update.message.reply_text(
+            LANGUAGES[lang]["screenshot_received"],
+            reply_markup=get_success_upload_keyboard(lang)
+        )
+
+        log_action("payment_screenshot_uploaded", user_id, {
+            "payment_type": payment_type,
+            "file_id": file.file_id
+        })
+
+    except Exception as e:
+        logger.error(f"Error processing payment screenshot: {e}")
+        await update.message.reply_text(LANGUAGES[lang]["upload_error"])
 
 
 handlers = [
