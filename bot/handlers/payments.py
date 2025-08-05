@@ -383,10 +383,9 @@ async def handle_online_session_payment(update: Update, context: ContextTypes.DE
 
         await query.edit_message_text(
             text=f"💳 <b>{LANGUAGES[lang]['online_session']}</b>\n\n{payment_details}",
-            reply_markup=get_back_to_currency_selection_keyboard(lang),  # Используем новую клавиатуру
+            reply_markup=get_back_to_currency_selection_keyboard(lang),
             parse_mode='HTML'
         )
-
     except Exception as e:
         logger.error(f"Error in handle_online_session_payment: {e}")
         await query.answer("⚠️ Ошибка при загрузке реквизитов")

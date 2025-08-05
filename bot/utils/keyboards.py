@@ -64,7 +64,6 @@ def get_payment_methods_keyboard(lang, webinar_id):
         [InlineKeyboardButton(LANGUAGES[lang]["payment_rub"], callback_data=f"pay_rub_{webinar_id}")],
         [InlineKeyboardButton(LANGUAGES[lang]["payment_crypto"], callback_data=f"pay_crypto_{webinar_id}")],
         [InlineKeyboardButton(LANGUAGES[lang]["payment_eur"], callback_data=f"pay_eur_{webinar_id}")],
-        [InlineKeyboardButton(LANGUAGES[lang]["upload_payment_screenshot"], callback_data=f"upload_screenshot:{webinar_id}")],  # Новая кнопка
         [InlineKeyboardButton(LANGUAGES[lang]['back'], callback_data=f"webinar_details_{webinar_id}")]
     ])
 
@@ -104,7 +103,6 @@ def get_hypno_payment_keyboard(lang, part):
         [InlineKeyboardButton(LANGUAGES[lang]["payment_rub"], callback_data=f"hypno_pay:rub:{part}")],
         [InlineKeyboardButton(LANGUAGES[lang]["payment_crypto"], callback_data=f"hypno_pay:crypto:{part}")],
         [InlineKeyboardButton(LANGUAGES[lang]["payment_eur"], callback_data=f"hypno_pay:eur:{part}")],
-        [InlineKeyboardButton(LANGUAGES[lang]["upload_payment_screenshot"], callback_data=f"hypno_upload_screenshot:{part}")],  # Новая кнопка
         [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="back_to_hypno_parts")]
     ])
 
@@ -132,7 +130,6 @@ def get_femdom_payment_keyboard(lang, part):
         [InlineKeyboardButton(LANGUAGES[lang]["payment_rub"], callback_data=f"femdom_pay:rub:{part}")],
         [InlineKeyboardButton(LANGUAGES[lang]["payment_crypto"], callback_data=f"femdom_pay:crypto:{part}")],
         [InlineKeyboardButton(LANGUAGES[lang]["payment_eur"], callback_data=f"femdom_pay:eur:{part}")],
-        [InlineKeyboardButton(LANGUAGES[lang]["upload_payment_screenshot"], callback_data=f"femdom_upload_screenshot:{part}")],  # Новая кнопка
         [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="back_to_femdom_parts")]
     ])
 
@@ -296,7 +293,6 @@ def get_online_session_payment_keyboard(lang):
         [InlineKeyboardButton(LANGUAGES[lang]["payment_rub"], callback_data="online_session_payment:rub")],
         [InlineKeyboardButton(LANGUAGES[lang]["payment_crypto"], callback_data="online_session_payment:crypto")],
         [InlineKeyboardButton(LANGUAGES[lang]["payment_eur"], callback_data="online_session_payment:eur")],
-        [InlineKeyboardButton(LANGUAGES[lang]["upload_payment_screenshot"], callback_data="online_session_upload_screenshot")],  # Новая кнопка
         [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="online_session")]
     ])
 
@@ -316,6 +312,7 @@ def get_online_session_keyboard(lang):
 def get_back_to_currency_selection_keyboard(lang):
     """Клавиатура для возврата к выбору валюты"""
     return InlineKeyboardMarkup([
+        [InlineKeyboardButton(LANGUAGES[lang]["upload_payment_screenshot"], callback_data="online_session_upload_screenshot")],
         [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="online_session_payment")]
     ])
 
