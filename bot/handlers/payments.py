@@ -417,11 +417,14 @@ async def handle_upload_screenshot(update: Update, context: ContextTypes.DEFAULT
         context.user_data['awaiting_screenshot'] = True
         context.user_data['current_payment_type'] = f"webinar_{webinar_id}"
 
-        await query.edit_message_text(
+        # Сохраняем сообщение с инструкциями для последующего удаления
+        message = await query.edit_message_text(
             text=LANGUAGES[lang]["upload_payment_instructions"],
             reply_markup=get_upload_instructions_keyboard(lang, f"payment_methods_{webinar_id}"),
             parse_mode='HTML'
         )
+        context.user_data['last_instructions_message_id'] = message.message_id
+
     except Exception as e:
         logger.error(f"Error in handle_upload_screenshot: {e}")
 
@@ -436,11 +439,12 @@ async def handle_hypno_upload_screenshot(update: Update, context: ContextTypes.D
         context.user_data['awaiting_screenshot'] = True
         context.user_data['current_payment_type'] = f"hypno_part_{part}"
 
-        await query.edit_message_text(
+        message = await query.edit_message_text(
             text=LANGUAGES[lang]["upload_payment_instructions"],
             reply_markup=get_upload_instructions_keyboard(lang, f"hypno_back_to_payment_{part}"),
             parse_mode='HTML'
         )
+        context.user_data['last_instructions_message_id'] = message.message_id
     except Exception as e:
         logger.error(f"Error in handle_hypno_upload_screenshot: {e}")
 
@@ -455,11 +459,12 @@ async def handle_femdom_upload_screenshot(update: Update, context: ContextTypes.
         context.user_data['awaiting_screenshot'] = True
         context.user_data['current_payment_type'] = f"femdom_part_{part}"
 
-        await query.edit_message_text(
+        message = await query.edit_message_text(
             text=LANGUAGES[lang]["upload_payment_instructions"],
             reply_markup=get_upload_instructions_keyboard(lang, f"femdom_back_to_payment_{part}"),
             parse_mode='HTML'
         )
+        context.user_data['last_instructions_message_id'] = message.message_id
     except Exception as e:
         logger.error(f"Error in handle_femdom_upload_screenshot: {e}")
 
@@ -474,11 +479,12 @@ async def handle_consultation_upload_screenshot(update: Update, context: Context
         context.user_data['awaiting_screenshot'] = True
         context.user_data['current_payment_type'] = f"consultation_{consultation_type}"
 
-        await query.edit_message_text(
+        message = await query.edit_message_text(
             text=LANGUAGES[lang]["upload_payment_instructions"],
             reply_markup=get_upload_instructions_keyboard(lang, f"consultation_back:{consultation_type}"),
             parse_mode='HTML'
         )
+        context.user_data['last_instructions_message_id'] = message.message_id
     except Exception as e:
         logger.error(f"Error in handle_consultation_upload_screenshot: {e}")
 
@@ -492,11 +498,12 @@ async def handle_online_session_upload_screenshot(update: Update, context: Conte
         context.user_data['awaiting_screenshot'] = True
         context.user_data['current_payment_type'] = "online_session"
 
-        await query.edit_message_text(
+        message = await query.edit_message_text(
             text=LANGUAGES[lang]["upload_payment_instructions"],
             reply_markup=get_upload_instructions_keyboard(lang, "online_session_payment"),
             parse_mode='HTML'
         )
+        context.user_data['last_instructions_message_id'] = message.message_id
     except Exception as e:
         logger.error(f"Error in handle_online_session_upload_screenshot: {e}")
 
@@ -524,11 +531,23 @@ async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         payment_type = context.user_data.get('current_payment_type', 'unknown')
 
+        # Удаляем предыдущее сообщение с инструкциями
+        if 'last_instructions_message_id' in context.user_data:
+            try:
+                await context.bot.delete_message(
+                    chat_id=update.effective_chat.id,
+                    message_id=context.user_data['last_instructions_message_id']
+                )
+            except Exception as e:
+                logger.error(f"Failed to delete instructions message: {e}")
+
         # Удаляем флаг ожидания
         del context.user_data['awaiting_screenshot']
         del context.user_data['current_payment_type']
+        if 'last_instructions_message_id' in context.user_data:
+            del context.user_data['last_instructions_message_id']
 
-        # Подтверждаем получение
+        # Отправляем подтверждение
         await update.message.reply_text(
             LANGUAGES[lang]["screenshot_received"],
             reply_markup=get_success_upload_keyboard(lang)
