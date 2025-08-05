@@ -1,12 +1,18 @@
+import logging
+
 from telegram import Update
 from telegram.ext import ContextTypes, CallbackQueryHandler
-from bot.database.notion_db import get_user_data
+from bot.database.notion_db import get_user_data, notion
 from bot.handlers import update_menu_message
 from bot.utils.languages import LANGUAGES
 from bot.handlers.menu import show_main_menu, show_personal_account
 from bot.utils.keyboards import get_welcome_keyboard, get_main_menu_keyboard
 from bot.utils.logger import log_action
+from notion_client import Client
+from config import NOTION_TOKEN, NOTION_DATABASE_ID
 
+
+notion = Client(auth=NOTION_TOKEN)
 
 async def language_selection(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
@@ -69,9 +75,50 @@ async def handle_personal_account(update: Update, context: ContextTypes.DEFAULT_
     except Exception as e:
         log_action("personal_account_error", user_id, {"error": str(e)})
 
+
+async def handle_change_language(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    query = update.callback_query
+    await query.answer()  # Закрываем callback сразу
+
+    # Мгновенное переключение языка в интерфейсе
+    current_lang = context.user_data.get('lang', 'ru')
+    new_lang = 'en' if current_lang == 'ru' else 'ru'
+    context.user_data['lang'] = new_lang
+
+    # Сначала обновляем интерфейс
+    await show_personal_account(update, context)
+    log_action("language_changed_ui", user_id, {"new_language": new_lang})
+
+    # Затем запускаем фоновую задачу для Notion
+    context.application.create_task(
+        _update_language_in_notion(user_id, new_lang)
+    )
+
+
+async def _update_language_in_notion(user_id: int, new_lang: str):
+    """Фоновая задача для обновления языка в Notion"""
+    try:
+        response = notion.databases.query(
+            database_id=NOTION_DATABASE_ID,
+            filter={"property": "Telegram ID", "number": {"equals": user_id}}
+        )
+
+        if response["results"]:
+            page_id = response["results"][0]["id"]
+            notion.pages.update(
+                page_id=page_id,
+                properties={"Language": {"select": {"name": new_lang}}}
+            )
+            log_action("notion_language_updated", user_id, {"new_language": new_lang})
+    except Exception as e:
+        logging.getLogger(__name__).error(f"Background Notion update failed: {e}", exc_info=True)
+        log_action("notion_language_update_failed", user_id, {"error": str(e)})
+
 handlers = [
     CallbackQueryHandler(language_selection, pattern="^set_lang_"),
     CallbackQueryHandler(main_menu, pattern="^main_menu$"),
     CallbackQueryHandler(handle_personal_account, pattern="^menu_personal_account$"),
+    CallbackQueryHandler(handle_change_language, pattern="^personal_change_lang$"),
     CallbackQueryHandler(handle_personal_account, pattern="^personal_"),
 ]

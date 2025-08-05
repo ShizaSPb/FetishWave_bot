@@ -691,15 +691,12 @@ async def show_online_session_payment_options(update: Update, context: ContextTy
         log_action("online_payment_options_error", user_id, {"error": str(e)})
         logger.error(f"Error in show_online_session_payment_options: {e}")
 
+
 async def show_personal_account(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
-    log_action("personal_account_open", user_id)
+    lang = context.user_data.get('lang', 'ru')
 
     try:
-        query = update.callback_query
-        await query.answer()
-        lang = context.user_data.get('lang', 'ru')
-
         await update_menu_message(
             update=update,
             context=context,
@@ -709,7 +706,6 @@ async def show_personal_account(update: Update, context: ContextTypes.DEFAULT_TY
             parse_mode='HTML',
             menu_type='personal_account'
         )
-        log_action("personal_account_shown", user_id)
     except Exception as e:
         log_action("personal_account_error", user_id, {"error": str(e)})
         raise
