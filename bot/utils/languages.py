@@ -70,6 +70,7 @@ LANGUAGES = {
         "payment_rub": "₽ Рубли",
         "payment_crypto": "₿ Crypto (USDT TRC20)",
         "payment_eur": "€ Euro",
+        "upload_payment_screenshot": "📤 Загрузить скриншот оплаты",
         "payment_error": "⚠️ Ошибка обработки платежа",
 
         # === Разное ===
@@ -200,6 +201,7 @@ LANGUAGES = {
         "payment_rub": "₽ Rubles",
         "payment_crypto": "₿ Crypto (USDT TRC20)",
         "payment_eur": "€ Euro",
+        "upload_payment_screenshot": "📤 Upload payment screenshot",
         "payment_error": "⚠️ Payment processing error",
 
         # === Miscellaneous ===

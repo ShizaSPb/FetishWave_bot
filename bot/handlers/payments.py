@@ -406,6 +406,86 @@ async def back_to_currency_selection(update: Update, context: ContextTypes.DEFAU
         logger.error(f"Error in back_to_currency_selection: {e}")
         await query.answer("⚠️ Ошибка при возврате")
 
+
+async def handle_upload_screenshot(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Обработчик кнопки загрузки скриншота (заглушка)"""
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+
+        await query.edit_message_text(
+            text=LANGUAGES[lang]["upload_payment_screenshot"] + " (функция в разработке)",
+            reply_markup=get_back_to_payment_methods_keyboard("webinar_id", lang)  # Заглушка
+        )
+    except Exception as e:
+        logger.error(f"Error in handle_upload_screenshot: {e}")
+
+
+# Добавить аналогичные обработчики для других типов платежей
+async def handle_hypno_upload_screenshot(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Обработчик кнопки загрузки скриншота для гипно вебинара (заглушка)"""
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+        part = query.data.split(":")[1]
+
+        await query.edit_message_text(
+            text=LANGUAGES[lang]["upload_payment_screenshot"] + " (функция в разработке)",
+            reply_markup=get_back_to_hypno_payment_keyboard(lang, part)
+        )
+    except Exception as e:
+        logger.error(f"Error in handle_hypno_upload_screenshot: {e}")
+
+
+async def handle_femdom_upload_screenshot(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Обработчик кнопки загрузки скриншота для фемдом вебинара (заглушка)"""
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+        part = query.data.split(":")[1]
+
+        await query.edit_message_text(
+            text=LANGUAGES[lang]["upload_payment_screenshot"] + " (функция в разработке)",
+            reply_markup=get_back_to_femdom_payment_keyboard(lang, part)
+        )
+    except Exception as e:
+        logger.error(f"Error in handle_femdom_upload_screenshot: {e}")
+
+
+async def handle_consultation_upload_screenshot(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Обработчик кнопки загрузки скриншота для консультаций (заглушка)"""
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+        consultation_type = query.data.split(":")[1]
+
+        await query.edit_message_text(
+            text=LANGUAGES[lang]["upload_payment_screenshot"] + " (функция в разработке)",
+            reply_markup=get_back_to_consultation_payment_keyboard(lang, consultation_type)
+        )
+    except Exception as e:
+        logger.error(f"Error in handle_consultation_upload_screenshot: {e}")
+
+
+async def handle_online_session_upload_screenshot(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Обработчик кнопки загрузки скриншота для онлайн сессии (заглушка)"""
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+
+        await query.edit_message_text(
+            text=LANGUAGES[lang]["upload_payment_screenshot"] + " (функция в разработке)",
+            reply_markup=get_back_to_currency_selection_keyboard(lang)
+        )
+    except Exception as e:
+        logger.error(f"Error in handle_online_session_upload_screenshot: {e}")
+
+
 handlers = [
     # Common payments
     CallbackQueryHandler(show_payment_methods, pattern="^payment_methods_"),
@@ -431,4 +511,11 @@ handlers = [
     CallbackQueryHandler(handle_online_session_payment, pattern="^online_session_payment:crypto$"),
     CallbackQueryHandler(handle_online_session_payment, pattern="^online_session_payment:eur$"),
     CallbackQueryHandler(back_to_currency_selection, pattern="^online_session_payment$"),
+
+    # Новые обработчики для загрузки скриншотов
+    CallbackQueryHandler(handle_upload_screenshot, pattern="^upload_screenshot:"),
+    CallbackQueryHandler(handle_hypno_upload_screenshot, pattern="^hypno_upload_screenshot:"),
+    CallbackQueryHandler(handle_femdom_upload_screenshot, pattern="^femdom_upload_screenshot:"),
+    CallbackQueryHandler(handle_consultation_upload_screenshot, pattern="^consultation_upload_screenshot:"),
+    CallbackQueryHandler(handle_online_session_upload_screenshot, pattern="^online_session_upload_screenshot$"),
 ]
