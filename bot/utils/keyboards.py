@@ -333,3 +333,13 @@ def get_invalid_file_keyboard(lang: str, back_pattern: str = 'main_menu') -> Inl
     return InlineKeyboardMarkup([
         [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data=back_pattern)]
     ])
+
+def get_personal_account_keyboard(lang: str) -> InlineKeyboardMarkup:
+    """Клавиатура личного кабинета"""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(LANGUAGES[lang]["edit_profile"], callback_data="personal_edit")],
+        [InlineKeyboardButton(LANGUAGES[lang]["change_language"], callback_data="personal_change_lang")],
+        [InlineKeyboardButton(LANGUAGES[lang]["my_purchases"], callback_data="personal_purchases")],
+        [InlineKeyboardButton(LANGUAGES[lang]["donate"], callback_data="personal_donate")],
+        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="main_menu")]
+    ])

@@ -133,6 +133,12 @@ LANGUAGES = {
         "session_form": "📝 Заявка",
         "session_form_filled": "✅ Я заполнил(а)",
         "pay_tribute": "💰 Внести дань",
+
+        # === Личный кабинет ===
+        "edit_profile": "✏️ Изменить личные данные",
+        "change_language": "🌍 Сменить язык",
+        "my_purchases": "🛒 Мои покупки",
+        "donate": "❤️ Донат",
     },
 
 
@@ -271,6 +277,12 @@ LANGUAGES = {
         "online_session": "💻 Online Session",
         "session_form": "📝 Application",
         "session_form_filled": "✅ I have filled",
-        "pay_tribute": "💰 Pay Tribute"
+        "pay_tribute": "💰 Pay Tribute",
+
+        # === Personal account ===
+        "edit_profile": "✏️ Edit profile",
+        "change_language": "🌍 Change language",
+        "my_purchases": "🛒 My purchases",
+        "donate": "❤️ Donate",
     }
 }

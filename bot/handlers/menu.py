@@ -20,7 +20,7 @@ from bot.utils.keyboards import (
     get_consultation_payment_keyboard, get_mentoring_keyboard, get_mentoring_thanks_keyboard, get_audit_thanks_keyboard,
     get_audit_keyboard, get_buy_ads_thanks_keyboard, get_buy_ads_keyboard, get_offline_session_thanks_keyboard,
     get_session_menu_keyboard, get_offline_session_keyboard, get_online_session_keyboard,
-    get_online_session_payment_keyboard
+    get_online_session_payment_keyboard, get_personal_account_keyboard
 )
 from bot.utils.logger import log_action
 from config import ADMIN_CHAT_ID
@@ -690,6 +690,29 @@ async def show_online_session_payment_options(update: Update, context: ContextTy
     except Exception as e:
         log_action("online_payment_options_error", user_id, {"error": str(e)})
         logger.error(f"Error in show_online_session_payment_options: {e}")
+
+async def show_personal_account(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    log_action("personal_account_open", user_id)
+
+    try:
+        query = update.callback_query
+        await query.answer()
+        lang = context.user_data.get('lang', 'ru')
+
+        await update_menu_message(
+            update=update,
+            context=context,
+            text=LANGUAGES[lang]["personal_account"],
+            reply_markup=get_personal_account_keyboard(lang),
+            is_query=True,
+            parse_mode='HTML',
+            menu_type='personal_account'
+        )
+        log_action("personal_account_shown", user_id)
+    except Exception as e:
+        log_action("personal_account_error", user_id, {"error": str(e)})
+        raise
 
 handlers = [
     # Main menus

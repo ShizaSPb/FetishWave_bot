@@ -3,7 +3,7 @@ from telegram.ext import ContextTypes, CallbackQueryHandler
 from bot.database.notion_db import get_user_data
 from bot.handlers import update_menu_message
 from bot.utils.languages import LANGUAGES
-from bot.handlers.menu import show_main_menu
+from bot.handlers.menu import show_main_menu, show_personal_account
 from bot.utils.keyboards import get_welcome_keyboard, get_main_menu_keyboard
 from bot.utils.logger import log_action
 
@@ -58,8 +58,20 @@ async def main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
             menu_type='main'
         )
 
+async def handle_personal_account(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    log_action("personal_account_request", user_id)
+
+    try:
+        query = update.callback_query
+        await query.answer()
+        await show_personal_account(update, context)
+    except Exception as e:
+        log_action("personal_account_error", user_id, {"error": str(e)})
 
 handlers = [
     CallbackQueryHandler(language_selection, pattern="^set_lang_"),
-    CallbackQueryHandler(main_menu, pattern="^main_menu$")
+    CallbackQueryHandler(main_menu, pattern="^main_menu$"),
+    CallbackQueryHandler(handle_personal_account, pattern="^menu_personal_account$"),
+    CallbackQueryHandler(handle_personal_account, pattern="^personal_"),
 ]
