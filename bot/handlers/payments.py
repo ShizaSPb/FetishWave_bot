@@ -1,5 +1,7 @@
 import logging
-
+from datetime import datetime
+import os
+from pathlib import Path
 from telegram import Update
 from telegram.ext import ContextTypes, CallbackQueryHandler
 
@@ -16,11 +18,36 @@ from bot.utils.keyboards import (
     get_back_to_femdom_payment_keyboard,
     get_back_to_consultation_payment_keyboard,
     get_online_session_payment_keyboard, get_back_to_currency_selection_keyboard,
-    get_upload_instructions_keyboard, get_success_upload_keyboard,
+    get_upload_instructions_keyboard, get_success_upload_keyboard, get_invalid_file_keyboard,
 )
 from bot.utils.logger import log_action
+from config import ADMIN_CHAT_ID
 
 logger = logging.getLogger(__name__)
+
+ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.pdf', '.heic', '.heif'}
+ALLOWED_MIME_TYPES = {
+    'image/jpeg',
+    'image/png',
+    'application/pdf',
+    'image/heic',
+    'image/heif'
+}
+
+
+def is_file_allowed(file_name: str, mime_type: str = None) -> bool:
+    """Проверяет файл по расширению и MIME-типу с конвертацией HEIC"""
+    file_ext = Path(file_name).suffix.lower()
+
+    # Разрешаем HEIC/HEIF только от iPhone
+    if file_ext in {'.heic', '.heif'}:
+        return True
+
+    # Стандартная проверка для других форматов
+    if mime_type and mime_type not in ALLOWED_MIME_TYPES:
+        return False
+
+    return file_ext in ALLOWED_EXTENSIONS
 
 # Общие обработчики платежей
 async def show_payment_methods(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -416,8 +443,9 @@ async def handle_upload_screenshot(update: Update, context: ContextTypes.DEFAULT
 
         context.user_data['awaiting_screenshot'] = True
         context.user_data['current_payment_type'] = f"webinar_{webinar_id}"
+        # Сохраняем шаблон для кнопки "Назад"
+        context.user_data['last_back_pattern'] = f"payment_methods_{webinar_id}"
 
-        # Сохраняем сообщение с инструкциями для последующего удаления
         message = await query.edit_message_text(
             text=LANGUAGES[lang]["upload_payment_instructions"],
             reply_markup=get_upload_instructions_keyboard(lang, f"payment_methods_{webinar_id}"),
@@ -515,21 +543,62 @@ async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.user_data.get('awaiting_screenshot'):
         return
 
-    # Проверяем тип файла
-    file = None
+    # Проверяем тип файла и получаем file_id
+    file_id = None
+    is_document = False
+    is_valid = False
+    file_name = ""
+
     if update.message.document:
         file = update.message.document
-        if file.mime_type not in ['application/pdf', 'image/jpeg', 'image/png']:
-            await update.message.reply_text(LANGUAGES[lang]["invalid_file_type"])
-            return
+        file_name = file.file_name or ""
+        if (file.mime_type in ALLOWED_MIME_TYPES and
+                is_file_allowed(file_name, file.mime_type)):
+            file_id = file.file_id
+            is_document = True
+            is_valid = True
     elif update.message.photo:
-        file = update.message.photo[-1]
+        file = update.message.photo[-1]  # Берем самое большое фото
+        file_id = file.file_id
+        file_name = f"photo_{file.file_id}.jpg"
+        is_valid = is_file_allowed(file_name)
     else:
-        await update.message.reply_text(LANGUAGES[lang]["invalid_file_type"])
-        return
+        is_valid = False
+
+    if not is_valid:
+        try:
+            # Удаляем неверный файл
+            await context.bot.delete_message(
+                chat_id=update.effective_chat.id,
+                message_id=update.message.message_id
+            )
+
+            # Формируем детальное сообщение об ошибке
+            error_message = (
+                f"⚠️ {LANGUAGES[lang]['invalid_file_type']}\n\n"
+                f"Допустимые форматы:\n"
+                f"- JPG/JPEG (.jpg, .jpeg)\n"
+                f"- PNG (.png)\n"
+                f"- PDF (.pdf)\n\n"
+                f"HEIC и другие форматы не поддерживаются!"
+            )
+
+            # Отправляем сообщение с кнопкой назад
+            back_pattern = context.user_data.get('last_back_pattern', 'main_menu')
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text=error_message,
+                reply_markup=get_invalid_file_keyboard(lang, back_pattern),
+                parse_mode='HTML'
+            )
+            return
+        except Exception as e:
+            logger.error(f"Failed to handle invalid file: {e}")
+            return
 
     try:
         payment_type = context.user_data.get('current_payment_type', 'unknown')
+        user = update.effective_user
 
         # Удаляем предыдущее сообщение с инструкциями
         if 'last_instructions_message_id' in context.user_data:
@@ -541,7 +610,49 @@ async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
             except Exception as e:
                 logger.error(f"Failed to delete instructions message: {e}")
 
-        # Сохраняем ID сообщения с файлом для последующего удаления
+        # Формируем текст уведомления для админа
+        user_info = f"@{user.username}" if user.username else f"ID: {user.id}"
+        payment_type_localized = {
+            'webinar_hypno': "Вебинар по гипнозу",
+            'webinar_femdom': "Вебинар по фемдом",
+            'consultation_love': "Консультация (личная жизнь)",
+            'consultation_work': "Консультация (работа)",
+            'online_session': "Онлайн сессия"
+        }.get(payment_type, payment_type)
+
+        admin_message = (
+            f"📸 <b>Новый скриншот оплаты</b>\n\n"
+            f"🔹 Тип: {payment_type_localized}\n"
+            f"👤 Пользователь: <a href='tg://user?id={user.id}'>{user_info}</a>\n"
+            f"🆔 ID: {user.id}\n"
+            f"📅 Время: {datetime.now().strftime('%d.%m.%Y %H:%M')}"
+        )
+
+        # Отправляем уведомление админу
+        try:
+            if is_document:
+                await context.bot.send_document(
+                    chat_id=ADMIN_CHAT_ID,
+                    document=file_id,
+                    caption=admin_message,
+                    parse_mode='HTML'
+                )
+            else:
+                await context.bot.send_photo(
+                    chat_id=ADMIN_CHAT_ID,
+                    photo=file_id,
+                    caption=admin_message,
+                    parse_mode='HTML'
+                )
+        except Exception as e:
+            logger.error(f"Failed to send file to admin: {e}")
+            await context.bot.send_message(
+                chat_id=ADMIN_CHAT_ID,
+                text=f"{admin_message}\n\n⚠️ Не удалось отправить файл (ID: {file_id})",
+                parse_mode='HTML'
+            )
+
+        # Сохраняем ID сообщения с файлом
         context.user_data['last_file_message_id'] = update.message.message_id
 
         # Удаляем флаги ожидания
@@ -550,23 +661,29 @@ async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if 'last_instructions_message_id' in context.user_data:
             del context.user_data['last_instructions_message_id']
 
-        # Отправляем подтверждение
+        # Отправляем подтверждение пользователю
         confirmation_msg = await update.message.reply_text(
             LANGUAGES[lang]["screenshot_received"],
             reply_markup=get_success_upload_keyboard(lang)
         )
 
-        # Сохраняем ID сообщения с подтверждением для возможного удаления
+        # Сохраняем ID подтверждения для возможного удаления
         context.user_data['last_confirmation_message_id'] = confirmation_msg.message_id
 
         log_action("payment_screenshot_uploaded", user_id, {
             "payment_type": payment_type,
-            "file_id": file.file_id
+            "file_id": file_id,
+            "file_name": file_name,
+            "file_type": "document" if is_document else "photo",
+            "admin_notified": True
         })
 
     except Exception as e:
         logger.error(f"Error processing payment screenshot: {e}")
-        await update.message.reply_text(LANGUAGES[lang]["upload_error"])
+        await update.message.reply_text(
+            LANGUAGES[lang]["upload_error"],
+            reply_markup=get_invalid_file_keyboard(lang, 'main_menu')
+        )
 
 
 handlers = [

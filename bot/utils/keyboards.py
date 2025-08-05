@@ -327,3 +327,9 @@ def get_success_upload_keyboard(lang: str) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([
         [InlineKeyboardButton(LANGUAGES[lang]["back_to_menu"], callback_data="main_menu")]
     ])
+
+def get_invalid_file_keyboard(lang: str, back_pattern: str = 'main_menu') -> InlineKeyboardMarkup:
+    """Клавиатура для сообщения о неверном формате файла"""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data=back_pattern)]
+    ])
