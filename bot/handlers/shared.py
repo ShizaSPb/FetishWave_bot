@@ -44,7 +44,8 @@ async def update_menu_message(
         reply_markup: InlineKeyboardMarkup,
         is_query: bool = False,
         parse_mode: Optional[str] = None,
-        menu_type: str = 'main'
+        menu_type: str = 'main',
+        cleanup_previous: bool = False  # Новый параметр
 ) -> None:
     """Универсальная функция для управления меню"""
     chat_id = update.effective_chat.id
@@ -54,16 +55,16 @@ async def update_menu_message(
     context.user_data['last_menu_type'] = menu_type
 
     try:
-        # Удаляем предыдущее меню, если оно есть
-        if 'last_menu_message_id' in context.user_data:
+        # Удаляем предыдущее меню и файлы, если требуется
+        if cleanup_previous and 'last_file_message_id' in context.user_data:
             try:
                 await context.bot.delete_message(
                     chat_id=chat_id,
-                    message_id=context.user_data['last_menu_message_id']
+                    message_id=context.user_data['last_file_message_id']
                 )
-                log_action("old_menu_deleted", user_id)
+                del context.user_data['last_file_message_id']
             except Exception as e:
-                log_action("menu_deletion_failed", user_id, {"error": str(e)})
+                log_action("file_deletion_failed", user_id, {"error": str(e)})
 
         # Отправляем новое меню
         if is_query and hasattr(update, 'callback_query'):

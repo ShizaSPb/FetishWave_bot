@@ -29,7 +29,7 @@ from datetime import datetime
 logger = logging.getLogger(__name__)
 
 
-async def show_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def show_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE, cleanup_previous: bool = True):
     user_id = update.effective_user.id
     log_action("main_menu_request", user_id)
 
@@ -41,6 +41,29 @@ async def show_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         lang = context.user_data.get('lang', 'ru')
         is_registered = context.user_data.get('registered') or await check_registration(user_id)
 
+        # Удаляем предыдущие сообщения при необходимости
+        if cleanup_previous:
+            messages_to_delete = [
+                'last_file_message_id',
+                'last_confirmation_message_id',
+                'last_menu_message_id'
+            ]
+
+            for msg_key in messages_to_delete:
+                if msg_key in context.user_data:
+                    try:
+                        await context.bot.delete_message(
+                            chat_id=update.effective_chat.id,
+                            message_id=context.user_data[msg_key]
+                        )
+                        del context.user_data[msg_key]
+                    except Exception as e:
+                        log_action("message_deletion_failed", user_id, {
+                            "message_type": msg_key,
+                            "error": str(e)
+                        })
+
+        # Отображаем главное меню
         if is_registered:
             await update_menu_message(
                 update=update,
@@ -48,7 +71,7 @@ async def show_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 text=LANGUAGES[lang]["main_menu"],
                 reply_markup=get_main_menu_keyboard(lang),
                 is_query=bool(query),
-                menu_type='main'  # Добавлено
+                menu_type='main'
             )
             log_action("main_menu_shown", user_id)
         else:
@@ -58,9 +81,10 @@ async def show_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 text=LANGUAGES[lang]["registration_required"],
                 reply_markup=get_welcome_keyboard(lang),
                 is_query=bool(query),
-                menu_type='main'  # Добавлено
+                menu_type='main'
             )
             log_action("registration_required_shown", user_id)
+
     except Exception as e:
         log_action("menu_error", user_id, {"error": str(e)})
         raise

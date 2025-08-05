@@ -541,17 +541,23 @@ async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
             except Exception as e:
                 logger.error(f"Failed to delete instructions message: {e}")
 
-        # Удаляем флаг ожидания
+        # Сохраняем ID сообщения с файлом для последующего удаления
+        context.user_data['last_file_message_id'] = update.message.message_id
+
+        # Удаляем флаги ожидания
         del context.user_data['awaiting_screenshot']
         del context.user_data['current_payment_type']
         if 'last_instructions_message_id' in context.user_data:
             del context.user_data['last_instructions_message_id']
 
         # Отправляем подтверждение
-        await update.message.reply_text(
+        confirmation_msg = await update.message.reply_text(
             LANGUAGES[lang]["screenshot_received"],
             reply_markup=get_success_upload_keyboard(lang)
         )
+
+        # Сохраняем ID сообщения с подтверждением для возможного удаления
+        context.user_data['last_confirmation_message_id'] = confirmation_msg.message_id
 
         log_action("payment_screenshot_uploaded", user_id, {
             "payment_type": payment_type,
