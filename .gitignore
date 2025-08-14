@@ -3,6 +3,8 @@
 *.env
 .env.local
 
+webinar_descriptions.py
+
 # Виртуальное окружение
 .venv/
 venv/
