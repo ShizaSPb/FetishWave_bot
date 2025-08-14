@@ -140,7 +140,10 @@ LANGUAGES = {
         "change_language": "🌍 Сменить язык",
         "my_purchases": "🛒 Мои покупки",
         "donate": "❤️ Донат",
-    },
+            "edit_profile_title": "Выберите, что изменить:",
+        "change_name": "Сменить имя",
+        "change_email": "Сменить Email",
+},
 
 
 
@@ -286,5 +289,8 @@ LANGUAGES = {
         "change_language": "🌍 Change language",
         "my_purchases": "🛒 My purchases",
         "donate": "❤️ Donate",
-    }
+            "edit_profile_title": "Choose what to change:",
+        "change_name": "Change name",
+        "change_email": "Change email",
+}
 }

@@ -1,4 +1,20 @@
 import logging
+from telegram import Update
+from telegram.ext import ContextTypes
+
+async def show_edit_profile_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Показывает меню 'Изменить личные данные' (только кнопки)."""
+    lang = context.user_data.get('lang', 'ru')
+    await update_menu_message(
+        update=update,
+        context=context,
+        text=LANGUAGES[lang]["edit_profile_title"],
+        reply_markup=get_edit_profile_menu_keyboard(lang),
+        is_query=True,
+        parse_mode='HTML',
+        menu_type='edit_profile_menu'
+    )
+
 
 from telegram import Update
 from telegram.ext import ContextTypes, CallbackQueryHandler
@@ -6,7 +22,7 @@ from bot.database.notion_db import get_user_data, notion
 from bot.handlers import update_menu_message
 from bot.utils.languages import LANGUAGES
 from bot.handlers.menu import show_main_menu, show_personal_account
-from bot.utils.keyboards import get_welcome_keyboard, get_main_menu_keyboard
+from bot.utils.keyboards import get_welcome_keyboard, get_main_menu_keyboard, get_edit_profile_menu_keyboard
 from bot.utils.logger import log_action
 from notion_client import Client
 from config import NOTION_TOKEN, NOTION_DATABASE_ID
@@ -120,5 +136,6 @@ handlers = [
     CallbackQueryHandler(main_menu, pattern="^main_menu$"),
     CallbackQueryHandler(handle_personal_account, pattern="^menu_personal_account$"),
     CallbackQueryHandler(handle_change_language, pattern="^personal_change_lang$"),
+    CallbackQueryHandler(show_edit_profile_menu, pattern="^personal_edit$"),
     CallbackQueryHandler(handle_personal_account, pattern="^personal_"),
 ]

@@ -372,3 +372,12 @@ def get_donate_details_keyboard(lang: str, currency_key: str) -> InlineKeyboardM
         [InlineKeyboardButton(LANGUAGES[lang]["upload_payment_screenshot"], callback_data=f"donate_upload_screenshot:{currency_key}")],
         [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="menu_donate")]
     ])
+
+
+def get_edit_profile_menu_keyboard(lang: str) -> InlineKeyboardMarkup:
+    """Клавиатура меню 'Изменить личные данные'"""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(LANGUAGES[lang]["change_name"],  callback_data="personal_edit_name")],
+        [InlineKeyboardButton(LANGUAGES[lang]["change_email"], callback_data="personal_edit_email")],
+        [InlineKeyboardButton(LANGUAGES[lang]["back"],         callback_data="menu_personal_account")],
+    ])
