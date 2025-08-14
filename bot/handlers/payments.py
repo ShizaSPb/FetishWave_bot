@@ -617,7 +617,10 @@ async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
             'webinar_femdom': "Вебинар по фемдом",
             'consultation_love': "Консультация (личная жизнь)",
             'consultation_work': "Консультация (работа)",
-            'online_session': "Онлайн сессия"
+            'online_session': "Онлайн сессия",
+            'donate_rub': "Донат (RUB)",
+            'donate_crypto': "Донат (Crypto USDT TRC20)",
+            'donate_eur': "Донат (EUR)"
         }.get(payment_type, payment_type)
 
         admin_message = (
@@ -662,8 +665,9 @@ async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
             del context.user_data['last_instructions_message_id']
 
         # Отправляем подтверждение пользователю
+        confirmation_key = "donation_screenshot_received" if str(payment_type).startswith("donate_") else "screenshot_received"
         confirmation_msg = await update.message.reply_text(
-            LANGUAGES[lang]["screenshot_received"],
+            LANGUAGES[lang][confirmation_key],
             reply_markup=get_success_upload_keyboard(lang)
         )
 

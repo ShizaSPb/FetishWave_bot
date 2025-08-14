@@ -6,6 +6,9 @@ from bot.handlers.shared import update_menu_message
 from bot.utils.languages import LANGUAGES
 from bot.data.descriptions import DESCRIPTIONS
 from bot.utils.keyboards import (
+    get_upload_instructions_keyboard,
+    get_donate_details_keyboard,
+    get_back_to_donate_currency_keyboard, get_donate_currency_keyboard,
     get_main_menu_keyboard,
     get_products_menu_keyboard,
     get_consultations_menu_keyboard,
@@ -710,8 +713,84 @@ async def show_personal_account(update: Update, context: ContextTypes.DEFAULT_TY
         log_action("personal_account_error", user_id, {"error": str(e)})
         raise
 
+
+
+async def show_donate_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Экран доната с выбором валюты"""
+    user_id = update.effective_user.id
+    lang = context.user_data.get('lang', 'ru')
+    try:
+        await update_menu_message(
+            update=update,
+            context=context,
+            text=LANGUAGES[lang]["donate"],
+            reply_markup=get_donate_currency_keyboard(lang),
+            is_query=True,
+            parse_mode='HTML',
+            menu_type='donate_menu'
+        )
+        log_action("donate_menu_shown", user_id)
+    except Exception as e:
+        log_action("donate_menu_error", user_id, {"error": str(e)})
+        raise
+
+
+
+
+async def handle_donate_currency(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Обработчик выбора валюты для доната"""
+    user_id = update.effective_user.id
+    query = update.callback_query
+    await query.answer()
+    lang = context.user_data.get('lang', 'ru')
+
+    data = query.data
+    if data == "donate_rub":
+        details = DESCRIPTIONS[lang]["payment_rub_details"]
+        ckey = "rub"
+    elif data == "donate_crypto":
+        details = DESCRIPTIONS[lang]["payment_crypto_details"]
+        ckey = "crypto"
+    elif data == "donate_eur":
+        details = DESCRIPTIONS[lang]["payment_eur_details"]
+        ckey = "eur"
+    else:
+        return
+
+    await query.edit_message_text(
+        text=details,
+        reply_markup=get_donate_details_keyboard(lang, ckey),
+        parse_mode='HTML'
+    )
+    log_action("donate_currency_shown", user_id, {"currency": ckey})
+
+
+
+async def handle_donate_upload_screenshot(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """
+    Включает режим ожидания скриншота для доната.
+    Колбэк: donate_upload_screenshot:<rub|crypto|eur>
+    """
+    query = update.callback_query
+    await query.answer()
+    lang = context.user_data.get('lang', 'ru')
+    try:
+        currency_key = query.data.split(":")[1]
+
+        context.user_data['awaiting_screenshot'] = True
+        context.user_data['current_payment_type'] = f"donate_{currency_key}"
+        context.user_data['last_back_pattern'] = "menu_donate"
+
+        message = await query.edit_message_text(
+            text=LANGUAGES[lang]["upload_payment_instructions"],
+            reply_markup=get_upload_instructions_keyboard(lang, "menu_donate"),
+            parse_mode='HTML'
+        )
+        context.user_data['last_instructions_message_id'] = message.message_id
+    except Exception as e:
+        await query.answer("⚠️ Ошибка, попробуйте ещё раз", show_alert=True)
 handlers = [
-    # Main menus
+# Main menus
     CallbackQueryHandler(show_main_menu, pattern="^main_menu$"),
     CallbackQueryHandler(show_products_menu, pattern="^menu_products$"),
     CallbackQueryHandler(show_offer_cooperation_menu, pattern="^menu_offer_cooperation$"),
@@ -737,4 +816,7 @@ handlers = [
     CallbackQueryHandler(show_online_session, pattern="^online_session$"),
     CallbackQueryHandler(show_online_session_payment_options, pattern="^online_session_payment$"),
     CallbackQueryHandler(handle_offline_session_filled, pattern="^offline_session_filled$"),
+    CallbackQueryHandler(show_donate_menu, pattern="^menu_donate$"),
+    CallbackQueryHandler(handle_donate_currency, pattern="^donate_(rub|crypto|eur)$"),
+    CallbackQueryHandler(handle_donate_upload_screenshot, pattern="^donate_upload_screenshot:(rub|crypto|eur)$"),
 ]

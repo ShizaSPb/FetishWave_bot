@@ -24,4 +24,8 @@ logs/
 
 # Инструкции
 INSTRUCTIONS.md
-help.md
+help.md__pycache__/
+*.pyc
+*.pyo
+*.pyd
+

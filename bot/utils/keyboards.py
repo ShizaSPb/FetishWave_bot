@@ -334,12 +334,41 @@ def get_invalid_file_keyboard(lang: str, back_pattern: str = 'main_menu') -> Inl
         [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data=back_pattern)]
     ])
 
+
+
+def get_donate_currency_keyboard(lang: str) -> InlineKeyboardMarkup:
+    """Клавиатура выбора валюты для доната (идентична разделам оплаты)"""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(LANGUAGES[lang]["payment_rub"], callback_data="donate_rub")],
+        [InlineKeyboardButton(LANGUAGES[lang]["payment_crypto"], callback_data="donate_crypto")],
+        [InlineKeyboardButton(LANGUAGES[lang]["payment_eur"], callback_data="donate_eur")],
+        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="menu_personal_account")]
+    ])
 def get_personal_account_keyboard(lang: str) -> InlineKeyboardMarkup:
     """Клавиатура личного кабинета"""
     return InlineKeyboardMarkup([
         [InlineKeyboardButton(LANGUAGES[lang]["edit_profile"], callback_data="personal_edit")],
         [InlineKeyboardButton(LANGUAGES[lang]["change_language"], callback_data="personal_change_lang")],
         [InlineKeyboardButton(LANGUAGES[lang]["my_purchases"], callback_data="personal_purchases")],
-        [InlineKeyboardButton(LANGUAGES[lang]["donate"], callback_data="personal_donate")],
+        [InlineKeyboardButton(LANGUAGES[lang]["donate"], callback_data="menu_donate")],
         [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="main_menu")]
+    ])
+
+def get_back_to_donate_currency_keyboard(lang: str) -> InlineKeyboardMarkup:
+    """Кнопка 'Назад' к выбору валюты доната"""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="menu_donate")]
+    ])
+
+
+def get_donate_details_keyboard(lang: str, currency_key: str) -> InlineKeyboardMarkup:
+    """
+    Клавиатура на экране реквизитов доната:
+    1) 📤 Загрузить скриншот оплаты
+    2) ◀️ Назад (к выбору валюты доната)
+    currency_key: 'rub' | 'crypto' | 'eur'
+    """
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(LANGUAGES[lang]["upload_payment_screenshot"], callback_data=f"donate_upload_screenshot:{currency_key}")],
+        [InlineKeyboardButton(LANGUAGES[lang]["back"], callback_data="menu_donate")]
     ])

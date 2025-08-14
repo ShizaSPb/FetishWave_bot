@@ -78,6 +78,7 @@ LANGUAGES = {
         ),
         "invalid_file_type": "⚠️ Недопустимый формат файла",
         "screenshot_received": "✅ Скриншот оплаты получен. Мы проверим его и свяжемся с вами.",
+        "donation_screenshot_received": "❤️ Я очень ценю вашу любовь и помощь ❤️",
         "upload_error": "⚠️ Произошла ошибка при обработке файла. Пожалуйста, попробуйте еще раз.",
         "payment_error": "⚠️ Ошибка обработки платежа",
 
@@ -223,6 +224,7 @@ LANGUAGES = {
         ),
         "invalid_file_type": "⚠️ Invalid file format",
         "screenshot_received": "✅ Payment screenshot received. We will check it and contact you.",
+        "donation_screenshot_received": "❤️ I really appreciate your love and support ❤️",
         "upload_error": "⚠️ An error occurred while processing the file. Please try again.",
         "payment_error": "⚠️ Payment processing error",
 
