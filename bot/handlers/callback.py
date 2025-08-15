@@ -16,7 +16,7 @@ from bot.utils.languages import LANGUAGES
 from bot.utils.logger import log_action
 from bot.handlers import update_menu_message
 from bot.database.notion_db import update_user_in_notion, get_user_data, notion
-from config import NOTION_DATABASE_ID
+from config import NOTION_USERS_DB_ID
 
 logger = logging.getLogger(__name__)
 
@@ -146,7 +146,7 @@ async def handle_new_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Найдём страницу в Notion по Telegram ID
     try:
         resp = notion.databases.query(
-            database_id=NOTION_DATABASE_ID,
+            database_id=NOTION_USERS_DB_ID,
             filter={"property": "Telegram ID", "number": {"equals": user_id}},
         )
         if not resp.get("results"):
@@ -251,7 +251,7 @@ async def handle_new_email(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Найдём страницу в Notion по Telegram ID
     try:
         resp = notion.databases.query(
-            database_id=NOTION_DATABASE_ID,
+            database_id=NOTION_USERS_DB_ID,
             filter={"property": "Telegram ID", "number": {"equals": user_id}},
         )
         if not resp.get("results"):
@@ -400,7 +400,7 @@ async def _update_language_in_notion(user_id: int, new_lang: str):
     """Фоновая задача для обновления языка в Notion."""
     try:
         response = notion.databases.query(
-            database_id=NOTION_DATABASE_ID,
+            database_id=NOTION_USERS_DB_ID,
             filter={"property": "Telegram ID", "number": {"equals": user_id}},
         )
 

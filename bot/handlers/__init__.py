@@ -10,6 +10,8 @@ from .payments import handlers as payments_handlers, handle_document
 from bot.utils.logger import log_action
 from telegram import Update
 from telegram.ext import ContextTypes, MessageHandler, filters
+from .admin_payments import handlers as admin_payments_handlers, remember_pending_payment
+
 
 
 async def block_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -62,6 +64,7 @@ def get_handlers():
         start_handler,
         view_data_handler,
         *callback_handlers,
+        *admin_payments_handlers,
         *menu_handlers,
         *webinars_handlers,
         *payments_handlers,

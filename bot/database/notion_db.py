@@ -1,12 +1,31 @@
 from notion_client import Client
-from config import NOTION_TOKEN, NOTION_DATABASE_ID
+from config import NOTION_TOKEN, NOTION_USERS_DB_ID
 import logging
 from bot.utils.logger import log_action
 import notion_client.errors
+import os
+
 
 logger = logging.getLogger(__name__)
 
 notion = Client(auth=NOTION_TOKEN)
+
+def _env_clean(key: str):
+    v = os.getenv(key)
+    if not v:
+        return None
+    v = v.strip().strip('"').strip("'")
+    if v.lower() in ("none", "null", ""):
+        return None
+    return v
+
+NOTION_TOKEN = _env_clean("NOTION_TOKEN")
+
+# Новые имена + обратная совместимость со старым NOTION_USERS_DB_ID
+NOTION_USERS_DB_ID      = _env_clean("NOTION_USERS_DB_ID")      or _env_clean("NOTION_USERS_DB_ID")
+NOTION_PRODUCTS_DB_ID   = _env_clean("NOTION_PRODUCTS_DB_ID")
+NOTION_PAYMENTS_DB_ID   = _env_clean("NOTION_PAYMENTS_DB_ID")
+NOTION_PURCHASES_DB_ID  = _env_clean("NOTION_PURCHASES_DB_ID")
 
 
 async def add_user_to_notion(user_data: dict) -> str:
@@ -19,7 +38,7 @@ async def add_user_to_notion(user_data: dict) -> str:
             raise ValueError("Missing required fields")
 
         response = notion.pages.create(
-            parent={"database_id": NOTION_DATABASE_ID},
+            parent={"database_id": NOTION_USERS_DB_ID},
             properties={
                 "Name": {"title": [{"text": {"content": user_data["name"]}}]},
                 "Telegram ID": {"number": user_data["telegram_id"]},
@@ -98,7 +117,7 @@ async def get_user_data(telegram_id: int):
 
     try:
         response = notion.databases.query(
-            database_id=NOTION_DATABASE_ID,
+            database_id=NOTION_USERS_DB_ID,
             filter={
                 "property": "Telegram ID",
                 "number": {"equals": telegram_id}

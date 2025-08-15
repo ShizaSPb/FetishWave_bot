@@ -22,6 +22,12 @@ from bot.utils.keyboards import (
 )
 from bot.utils.logger import log_action
 from config import ADMIN_CHAT_ID
+from bot.utils.admin_keyboards import get_admin_payment_actions_kb
+from bot.handlers.admin_payments import remember_pending_payment
+try:
+    from bot.database.notion_payments import create_payment_record  # опционально
+except Exception:
+    create_payment_record = None
 
 logger = logging.getLogger(__name__)
 
@@ -632,27 +638,54 @@ async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
         # Отправляем уведомление админу
+        # Сохраняем «платёж» для кнопок + создаём черновик в Notion (если настроено)
+        notion_payment_id = None
+        if create_payment_record:
+            try:
+                notion_payment_id = await create_payment_record(
+                    user_telegram_id=user.id,
+                    payment_type=str(payment_type),
+                    proof_file_id=file_id,
+                    product_code=None,  # при желании укажите код продукта
+                    username=user.username,
+                    name=user.full_name,
+                )
+            except Exception as e:
+                logger.warning("Failed to create payment in Notion: %s", e)
+
+        payment_id = remember_pending_payment(
+            context,
+            user_id=user.id,
+            payment_type=str(payment_type),
+            product_code=None,  # при желании укажите код продукта
+            notion_payment_id=notion_payment_id,
+        )
+        kb = get_admin_payment_actions_kb(payment_id)
+
         try:
             if is_document:
                 await context.bot.send_document(
                     chat_id=ADMIN_CHAT_ID,
                     document=file_id,
                     caption=admin_message,
-                    parse_mode='HTML'
+                    parse_mode='HTML',
+                    reply_markup=kb,
                 )
             else:
                 await context.bot.send_photo(
                     chat_id=ADMIN_CHAT_ID,
                     photo=file_id,
                     caption=admin_message,
-                    parse_mode='HTML'
+                    parse_mode='HTML',
+                    reply_markup=kb,
                 )
         except Exception as e:
             logger.error(f"Failed to send file to admin: {e}")
             await context.bot.send_message(
                 chat_id=ADMIN_CHAT_ID,
                 text=f"{admin_message}\n\n⚠️ Не удалось отправить файл (ID: {file_id})",
-                parse_mode='HTML'
+                parse_mode='HTML',
+                reply_markup=kb,
             )
 
         # Сохраняем ID сообщения с файлом
