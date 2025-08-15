@@ -143,6 +143,13 @@ LANGUAGES = {
             "edit_profile_title": "Выберите, что изменить:",
         "change_name": "Сменить имя",
         "change_email": "Сменить Email",
+        "profile_update_success": "✅ Данные успешно обновлены!",
+        "profile_update_failed": "❌ Не удалось обновить данные. Попробуйте позже.",
+        "invalid_email": "Некорректный email.",
+        "your_name": "Ваше имя",
+        "your_email": "Ваш Email",
+        "not_specified": "не указано",
+
 },
 
 
@@ -292,5 +299,12 @@ LANGUAGES = {
             "edit_profile_title": "Choose what to change:",
         "change_name": "Change name",
         "change_email": "Change email",
-}
+        "profile_update_success": "✅ Profile updated successfully!",
+        "profile_update_failed": "❌ Failed to update profile. Please try again later.",
+        "invalid_email": "Invalid email.",
+        "your_name": "Your name",
+        "your_email": "Your email",
+        "not_specified": "not set",
+
+    }
 }

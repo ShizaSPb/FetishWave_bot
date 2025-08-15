@@ -2,6 +2,7 @@ from notion_client import Client
 from config import NOTION_TOKEN, NOTION_DATABASE_ID
 import logging
 from bot.utils.logger import log_action
+import notion_client.errors
 
 logger = logging.getLogger(__name__)
 
@@ -42,34 +43,53 @@ async def add_user_to_notion(user_data: dict) -> str:
         raise
 
 
-async def update_user_in_notion(page_id: str, update_data: dict):
-    user_id = update_data.get('telegram_id')
-    log_action("notion_update_user_attempt", user_id)
-
+async def update_user_in_notion(page_id: str, update_data: dict) -> bool:
+    """
+    Частичное обновление пользователя в Notion.
+    Принимает любые из ключей: 'name', 'email' и валидно собирает properties.
+    Возвращает True/False в зависимости от успешности.
+    """
     try:
-        properties = {
-            "Name": {"title": [{"text": {"content": update_data["name"]}}]},
-            "Email": {"email": update_data["email"]}
-        }
+        properties = {}
 
-        if not all([update_data.get('name'), update_data.get('email')]):
-            raise ValueError("Missing required fields")
+        # Title / Name (Notion type: title)
+        if 'name' in update_data and update_data['name'] is not None:
+            name_val = str(update_data['name']).strip()
+            properties["Name"] = {
+                "title": [
+                    {
+                        "type": "text",
+                        "text": {"content": name_val}
+                    }
+                ]
+            }
 
+        # Email (Notion type: email)
+        if 'email' in update_data and update_data['email'] is not None:
+            email_val = str(update_data['email']).strip()
+            properties["Email"] = {"email": email_val}
+
+        if not properties:
+            logger.warning("update_user_in_notion called with empty properties payload")
+            return False
+
+        # Синхронный вызов клиента допустим внутри async
         response = notion.pages.update(
             page_id=page_id,
-            properties=properties
+            properties=properties,
         )
-
-        if not response.get('id'):
-            raise Exception("Notion returned empty response")
-
-        log_action("notion_update_user_success", user_id)
-        return True
-    except Exception as e:
-        log_action("notion_update_user_failed", user_id, {
-            "error": str(e)
+        log_action("notion_update_user_success", update_data.get('telegram_id'), {
+            "page_id": page_id,
+            "props": list(properties.keys())
         })
-        logger.error(f"Notion update failed: {e}", exc_info=True)
+        return True
+
+    except notion_client.errors.APIResponseError as e:
+        # Ошибки Notion SDK: выведем message и code
+        logger.error("Notion update failed: %s (code=%s)", getattr(e, "message", str(e)), getattr(e, "code", None))
+        return False
+    except Exception as e:
+        logger.error("Notion update failed: %s", e, exc_info=True)
         return False
 
 
