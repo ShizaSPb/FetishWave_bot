@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime
-import os
 from pathlib import Path
 from telegram import Update
 from telegram.ext import ContextTypes, CallbackQueryHandler
