@@ -1,0 +1,34 @@
+# Секретные файлы
+.env
+*.env
+.env.local
+
+/data/
+.zip
+
+# Виртуальное окружение
+.venv/
+venv/
+env/
+
+# Файлы IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Кеш Python
+__pycache__/
+*.py[cod]
+
+# Логи
+*.log
+logs/
+
+# Инструкции
+INSTRUCTIONS.md
+help.md__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
