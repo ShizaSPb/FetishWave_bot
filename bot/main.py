@@ -1,139 +1,146 @@
-import os
+from __future__ import annotations
+
+# ВАЖНО: включаем совместимость log_action максимально рано
+import bot.boot  # noqa: F401
+import asyncio
 import logging
-import re
-import httpx
-
-from telegram import Update, BotCommand, BotCommandScopeChat
-from telegram.ext import Application, ContextTypes
-from telegram.request import HTTPXRequest
+import os
+from typing import List
+from telegram.ext import Application
 from bot.services.logging_setup import setup_logging
+from bot.services.actions import log_action
 
-# опционально
 try:
-    from dotenv import load_dotenv  # type: ignore
-    load_dotenv()
+    from config import ADMIN_IDS  # type: ignore
 except Exception:
-    pass
+    ADMIN_IDS: List[int] = []
 
-# наш логгер: root → консоль+файл, JSON-события → тот же файл
-# (если у тебя нет bot/utils/logger.py — скажи, кину файл)
-from bot.utils.logger import setup_logging, log_action
-
-# админ-команды и Notion-репозитории
-from bot.handlers.admin_controls import handlers as admin_controls_handlers
-from bot.database import notion_descriptions as desc_repo
-from bot.database import notion_payment_methods as pay_repo
-
-def main() -> None:
-    setup_logging(log_path=os.getenv("ACTIONS_LOG_PATH", "bot_actions.log"))
-
-def get_bot_token() -> str:
-    token = (
-        os.getenv("BOT_TOKEN")
-        or os.getenv("TELEGRAM_BOT_TOKEN")
-        or os.getenv("TG_BOT_TOKEN")
-    )
-    if not token:
-        raise RuntimeError("Set BOT_TOKEN (or TELEGRAM_BOT_TOKEN) in environment")
-    return token
+# Обработчик ошибок (безопасный)
+try:
+    from bot.handlers.errors import error_handler  # type: ignore
+except Exception:
+    error_handler = None  # необязательно
 
 
-# HTTP-аудит Telegram без задержек (пишем в bot_actions.log JSON-события)
-_TOKEN_MASK = re.compile(r"/bot[0-9]+:[A-Za-z0-9_-]+")
-def _redact(url: str) -> str:
-    return _TOKEN_MASK.sub("/bot<redacted>", url)
-
-def build_tg_request() -> HTTPXRequest:
-    async def on_request(req: httpx.Request) -> None:
-        url = _redact(str(req.url))
-        log_action("http_req", lib="telegram", method=req.method, url=url, host=req.url.host)
-
-    async def on_response(resp: httpx.Response) -> None:
-        req = resp.request
-        url = _redact(str(req.url))
-        log_action(
-            "http", lib="telegram", method=req.method, url=url, host=req.url.host,
-            status=resp.status_code, ok=resp.status_code < 400, status_text=resp.reason_phrase,
-        )
-
-    client = httpx.AsyncClient(event_hooks={"request": [on_request], "response": [on_response]})
-    return HTTPXRequest(client=client)
-
-
-async def post_init(application: Application) -> None:
-    # прогрев Notion
-    try:
-        d = await desc_repo.preload_all()
-        p = await pay_repo.preload_all()
-        logging.getLogger("warmup").info(
-            "Notion caches preloaded: descriptions=%s, payment_methods=%s", d, p
-        )
-    except Exception as e:
-        logging.getLogger("warmup").warning("Notion preload failed: %s", e)
-
-    # персональное меню для админов
-    raw = os.getenv("ADMIN_IDS", "") or ""
-    ids = [int(x.strip()) for x in raw.split(",") if x.strip().isdigit()]
-    admin_cmds = [
-        BotCommand("diag_descriptions", "диагностика кэша описаний"),
-        BotCommand("reload_descriptions", "перезагрузить описания"),
-        BotCommand("diag_payments", "диагностика способов оплаты"),
-        BotCommand("reload_payments", "перезагрузить способы оплаты"),
-        BotCommand("restart", "перезапустить бота"),
-    ]
-    for uid in ids:
-        try:
-            await application.bot.set_my_commands(admin_cmds, scope=BotCommandScopeChat(chat_id=uid))
-            logging.getLogger("admin_menu").info("Admin menu set for %s", uid)
-        except Exception as e:
-            logging.getLogger("admin_menu").warning("Admin menu failed for %s: %s", uid, e)
-
-    # кто мы
-    try:
-        me = await application.bot.get_me()
-        logging.getLogger("startup").info("Bot started as @%s (id=%s)", me.username, me.id)
-        log_action("startup", username=me.username, bot_id=me.id)
-    except Exception as e:
-        logging.getLogger("startup").warning("get_me failed: %s", e)
-
-
-async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
-    logging.getLogger("tg.error").exception(
-        "Unhandled exception while handling update=%r", update, exc_info=context.error
-    )
-
-
-def main() -> None:
-    # инициализируем логи: консоль + файл bot_actions.log (можно сменить путём env ACTIONS_LOG_PATH)
-    setup_logging()
-
-    application = (
-        Application.builder()
-        .token(get_bot_token())
-        .post_init(post_init)         # прогрев/меню/идентификация безопасно внутри PTB loop
-        .build()
-    )
-
-    # твои проектные хендлеры (если есть агрегатор)
+def _register_project_handlers(application: Application) -> int:
+    count = 0
     try:
         from bot.handlers import handlers as project_handlers  # type: ignore
         for h in project_handlers:
             application.add_handler(h)
-        logging.getLogger("startup").info("Project handlers registered: %s", len(project_handlers))
+            count += 1
+    except Exception:
+        pass
+    return count
+
+
+def _register_payment_ack_handler(application: Application) -> None:
+    from bot.handlers.payments_ackpatch import handler as payment_ack_handler  # type: ignore
+    application.add_handler(payment_ack_handler)
+
+
+async def _warmup(application: Application) -> None:
+    log_warm = logging.getLogger("warmup")
+    try:
+        from bot.services.warmup import preload_notion_caches  # type: ignore
+        res = await preload_notion_caches()
+        if isinstance(res, dict):
+            log_warm.info("Notion caches preloaded: %s", ", ".join(f"{k}={v}" for k, v in res.items()))
+        else:
+            log_warm.info("Notion caches preloaded")
+    except Exception:
+        pass
+
+
+async def _setup_admin_controls(application: Application) -> None:
+    log_admin = logging.getLogger("admin_menu")
+    try:
+        from bot.handlers.admin_menu import install_admin_menu  # type: ignore
+        for admin_id in ADMIN_IDS:
+            try:
+                await install_admin_menu(application.bot, admin_id)  # type: ignore[arg-type]
+                log_admin.info("Admin menu set for %s", admin_id)
+            except Exception:
+                logging.getLogger(__name__).exception("Failed to set admin menu for %s", admin_id)
+    except Exception:
+        pass
+
+    try:
+        from telegram import BotCommand
+        await application.bot.set_my_commands([
+            BotCommand("start", "Главное меню"),
+            BotCommand("help", "Помощь"),
+        ])
+        logging.getLogger("startup").info("Default bot commands set")
+    except Exception:
+        pass
+
+
+async def _on_startup(application: Application) -> None:
+    log_start = logging.getLogger("startup")
+    try:
+        me = await application.bot.get_me()
     except Exception as e:
-        logging.getLogger("startup").info("No project handlers aggregator: %s", e)
+        log_start.warning("get_me failed: %s", e)
+    else:
+        log_start.info("Bot started as @%s (id=%s)", me.username, me.id)
+        try:
+            log_action("startup", username=me.username, bot_id=me.id)
+        except Exception:
+            pass
 
-    # админ-команды
-    for h in admin_controls_handlers:
-        application.add_handler(h)
-    logging.getLogger("startup").info("Admin controls registered: %s", len(admin_controls_handlers))
+    await _warmup(application)
+    await _setup_admin_controls(application)
 
-    # ошибки
-    application.add_error_handler(error_handler)
 
-    # старт
-    application.run_polling(allowed_updates=Update.ALL_TYPES)
+async def _on_shutdown(application: Application) -> None:
+    logging.getLogger("startup").info("Application is stopping. This might take a moment.")
+    try:
+        log_action("shutdown")
+    except Exception:
+        pass
+
+
+def _get_token() -> str:
+    token = os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_TOKEN")
+    if not token:
+        raise RuntimeError("Не задан токен бота. Укажи TELEGRAM_BOT_TOKEN или BOT_TOKEN.")
+    return token
+
+
+async def main() -> None:
+    setup_logging()
+
+    application = (
+        Application.builder()
+        .token(_get_token())
+        .concurrent_updates(True)
+        .build()
+    )
+
+    count = _register_project_handlers(application)
+    logging.getLogger("startup").info("Project handlers registered: %s", count)
+
+    _register_payment_ack_handler(application)
+
+    if error_handler:
+        application.add_error_handler(error_handler)
+
+    await application.initialize()
+    await application.start()
+    await _on_startup(application)
+    await application.updater.start_polling(drop_pending_updates=True)
+
+    try:
+        await asyncio.Event().wait()
+    except (KeyboardInterrupt, SystemExit):
+        pass
+    finally:
+        await _on_shutdown(application)
+        await application.updater.stop()
+        await application.stop()
+        await application.shutdown()
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

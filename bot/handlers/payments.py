@@ -19,7 +19,7 @@ from bot.utils.keyboards import (
     get_online_session_payment_keyboard, get_back_to_currency_selection_keyboard,
     get_upload_instructions_keyboard, get_success_upload_keyboard, get_invalid_file_keyboard,
 )
-from bot.utils.logger import log_action
+from bot.services.actions import log_action
 from config import ADMIN_CHAT_ID
 from bot.utils.admin_keyboards import get_admin_payment_actions_kb
 from bot.handlers.admin_payments import remember_pending_payment

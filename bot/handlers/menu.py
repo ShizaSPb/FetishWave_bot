@@ -25,7 +25,7 @@ from bot.utils.keyboards import (
     get_session_menu_keyboard, get_offline_session_keyboard, get_online_session_keyboard,
     get_online_session_payment_keyboard, get_personal_account_keyboard
 )
-from bot.utils.logger import log_action
+from bot.services.actions import log_action
 from config import ADMIN_CHAT_ID
 from datetime import datetime
 

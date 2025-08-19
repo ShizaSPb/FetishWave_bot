@@ -16,7 +16,7 @@ from bot.utils.keyboards import (
     get_femdom_payment_keyboard,
     get_back_to_femdom_payment_keyboard
 )
-from bot.utils.logger import log_action
+from bot.services.actions import log_action
 
 logger = logging.getLogger(__name__)
 

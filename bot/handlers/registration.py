@@ -14,7 +14,7 @@ from bot.database.notion_db import add_user_to_notion, get_user_data
 from bot.handlers.shared import get_user_language
 from bot.utils.languages import LANGUAGES
 from bot.utils.keyboards import get_already_registered_keyboard
-from bot.utils.logger import log_action
+from bot.services.actions import log_action
 
 logger = logging.getLogger(__name__)
 NAME, EMAIL = range(2)

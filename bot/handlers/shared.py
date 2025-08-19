@@ -4,7 +4,7 @@ from telegram import Update, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 
 from bot.utils.keyboards import get_language_keyboard
-from bot.utils.logger import log_action
+from bot.services.actions import log_action
 
 
 def get_user_language(context):

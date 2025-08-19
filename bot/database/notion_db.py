@@ -1,7 +1,7 @@
 from notion_client import Client
 from config import NOTION_TOKEN, NOTION_USERS_DB_ID
 import logging
-from bot.utils.logger import log_action
+from bot.services.actions import log_action
 import notion_client.errors
 import os
 

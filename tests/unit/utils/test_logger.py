@@ -6,7 +6,8 @@ from pathlib import Path
 from unittest.mock import patch
 
 # Важно: используем абсолютные импорты
-from bot.utils.logger import setup_logging, log_action
+from bot.services.logging_setup import setup_logging
+from services.actions import log_action
 
 
 @pytest.fixture

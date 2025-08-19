@@ -13,7 +13,7 @@ from telegram.ext import (
 from bot.handlers.menu import show_main_menu, show_personal_account
 from bot.utils.keyboards import get_welcome_keyboard, get_main_menu_keyboard, get_edit_profile_menu_keyboard
 from bot.utils.languages import LANGUAGES
-from bot.utils.logger import log_action
+from bot.services.actions import log_action
 from bot.handlers import update_menu_message
 from bot.database.notion_db import update_user_in_notion, get_user_data, notion
 from config import NOTION_USERS_DB_ID

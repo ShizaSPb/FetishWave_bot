@@ -2,7 +2,7 @@ import logging
 from telegram import Update
 from telegram.ext import ContextTypes, CommandHandler
 from bot.database.notion_db import get_user_data
-from bot.utils.logger import log_action
+from bot.services.actions import log_action
 
 logger = logging.getLogger(__name__)
 
