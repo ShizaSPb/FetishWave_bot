@@ -5,6 +5,7 @@
 
 /data/
 .zip
+ToDo.txt
 
 # Виртуальное окружение
 .venv/

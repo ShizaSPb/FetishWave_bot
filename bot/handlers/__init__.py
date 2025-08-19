@@ -1,14 +1,16 @@
 
-# bot/handlers/__init__.py — фикс: вернули регистрацию хендлеров "Вебинары"
+# bot/handlers/__init__.py — реестр хендлеров (быстрые ПЕРВЫМИ)
 from telegram.ext import MessageHandler, filters
 from telegram import Update
 from telegram.ext import ContextTypes
 
-# Импорт модулей
+# Импорт быстрых хендлеров
+from .payments_fast_ack import handlers as fast_ack_handlers
+
+# Остальные модули проекта
 from .cabinet_products import handlers as cabinet_products_handlers
-from .menu import (handlers as menu_handlers, show_main_menu, show_products_menu,
-                   show_consultations_menu, show_mentoring_menu, show_page_audit_menu,
-                   show_session_menu)
+from .menu import (handlers as menu_handlers, show_main_menu, show_products_menu, show_consultations_menu,
+                   show_mentoring_menu, show_page_audit_menu, show_session_menu)
 from .shared import update_menu_message
 from .start import handler as start_handler
 from .callback import handlers as callback_handlers
@@ -16,12 +18,7 @@ from .view_data import view_data_handler
 from .registration import register_conversation_handler
 from .payments import handlers as payments_handlers, handle_document
 from .admin_payments import handlers as admin_payments_handlers
-
-# ВАЖНО: добавляем импорт вебинаров (раньше в патче был пропущен)
 from .webinars import handlers as webinars_handlers, show_webinars_menu
-
-# Быстрые ACK‑хендлеры
-from .payments_fast_ack import handlers as fast_ack_handlers
 
 async def block_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     text = update.message.text if update.message else ''
@@ -39,7 +36,7 @@ async def block_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE) -
                 'mentoring': show_mentoring_menu,
                 'page_audit': show_page_audit_menu,
                 'session': show_session_menu,
-                'webinars': show_webinars_menu,  # на всякий случай
+                'webinars': show_webinars_menu,
             }.get(last_menu_type, show_main_menu)
             await menu_handler(update, context, cleanup_previous=False)
     except Exception:
@@ -47,7 +44,7 @@ async def block_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 
 def get_handlers():
     return [
-        # ВАЖНО: быстрые ACK — первыми
+        # ВАЖНО: быстрые — первыми, чтобы стопорить цепочку
         *fast_ack_handlers,
 
         *cabinet_products_handlers,
@@ -56,12 +53,11 @@ def get_handlers():
         *callback_handlers,
         *admin_payments_handlers,
         *menu_handlers,
-        # ВАЖНО: вебинары возвращены и стоят до payments‑handlers
         *webinars_handlers,
         *payments_handlers,
         register_conversation_handler,
         MessageHandler(filters.TEXT & ~filters.COMMAND, block_text_input),
-        # Старый обработчик документов — в конце на всякий случай
+        # Fallback обработчик документов — в самом конце
         MessageHandler(filters.Document.ALL | filters.PHOTO, handle_document),
     ]
 

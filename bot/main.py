@@ -132,15 +132,17 @@ async def main() -> None:
     await application.updater.start_polling(drop_pending_updates=True)
 
     try:
-        await asyncio.Event().wait()
-    except (KeyboardInterrupt, SystemExit):
-        pass
+        await asyncio.Event().wait()  # держим процесс
+    except asyncio.CancelledError:
+        pass  # ожидаемая отмена при Ctrl+C
     finally:
-        await _on_shutdown(application)
+        # корректное завершение PTB
         await application.updater.stop()
         await application.stop()
         await application.shutdown()
 
-
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        pass
